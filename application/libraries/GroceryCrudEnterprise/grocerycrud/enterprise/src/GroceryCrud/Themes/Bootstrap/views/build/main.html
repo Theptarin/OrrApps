@@ -1,0 +1,464 @@
+<!-- build from templates/main.html -->
+<script type="text/x-handlebars-template" class="gc-table-title-caption">
+    <div class="table-label panel-heading">
+        <div class="floatL l5">
+            {{subjectPlural}}
+        </div>
+        <div class="clear"></div>
+    </div>
+</script>
+<script type="text/x-handlebars-template" class="gc-table-header-columns">
+    {{#if hasActions}}
+        <th class="header-actions">
+            {{i18n.actions}}
+        </th>
+    {{/if}}
+    {{#each table_columns}}
+        <th class="{{#if hasOrdering}}column-with-ordering{{/if}}" data-order-by="{{column_name}}">
+            <div>{{display_name}}</div>
+        </th>
+    {{/each}}
+</script>
+<script type="text/x-handlebars-template" class="gc-header-actions-operations">
+    {{#if hasActionButtons}}
+        <td class="actions-select-multiple">
+            {{#if deleteMultiple}}
+            <div class="floatL t5 r10">
+                <input type="checkbox" class="select-all-none" />
+            </div>
+            {{/if}}
+            <div class="floatL">
+                <button
+                   type="button"
+                   class="hidden btn {{#if isBootstrapV4}}btn-outline-danger{{else}}btn-default{{/if}} delete-selected-button">
+                    <i class="fa fa-trash-o {{#unless isBootstrapV4}}text-danger{{/unless}}"></i>
+                    <span class="{{#unless isBootstrapV4}}text-danger{{/unless}}">
+                        {{i18n.action_delete}}
+                    </span>
+                </button>
+            </div>
+            <div class="floatR gc-settings-container">
+            </div>
+            <div class="clear"></div>
+        </td>
+    {{/if}}
+</script>
+<script type="text/x-handlebars-template" class="gc-search-columns">
+    {{#if searchByColumn}}
+        {{#each table_columns}}
+            <td class="gc-search-column">
+                    {{#if isEnum}}
+                    <select placeholder="{{../i18n.quick_search}}" name="{{column_name}}" class="form-control gc-searchable-select">
+                        <option></option>
+                        {{#each columnInfo.permittedValues}}
+                        <option value="={{this}}">{{this}}</option>
+                        {{/each}}
+                    </select>
+                    {{/if}}
+
+                    {{#if isDropdown}}
+                    <select placeholder="{{../i18n.quick_search}}" name="{{column_name}}" class="form-control gc-searchable-select">
+                        <option></option>
+                        {{#each columnInfo.permittedValues}}
+                        <option value="={{@key}}">{{this}}</option>
+                        {{/each}}
+                    </select>
+                    {{/if}}
+
+                    {{#if isRelational}}
+                    <select
+                            placeholder="{{../i18n.quick_search}}"
+                            name="{{column_name}}"
+                            class="form-control gc-searchable-select{{#if isSearchable}} gc-with-search-plugin{{/if}}">
+                        <option></option>
+                        {{#each columnInfo.permittedValues}}
+                        <option value="={{id}}">{{title}}</option>
+                        {{/each}}
+                    </select>
+                    {{/if}}
+
+                    {{#if isNtoNRelational}}
+                    <select
+                            placeholder="{{../i18n.quick_search}}"
+                            name="{{column_name}}"
+                            class="form-control gc-searchable-select{{#if isSearchable}} gc-with-search-plugin{{/if}}">
+                        <option></option>
+                        {{#each columnInfo.permittedValues}}
+                        <option value="{{id}}">{{title}}</option>
+                        {{/each}}
+                    </select>
+                    {{/if}}
+
+                    {{#if isDate}}
+                    <input type="text" class="form-control gc-searchable-date gc-searchable-input"
+                           placeholder="{{../i18n.quick_search}}"
+                           name="{{column_name}}"/>
+                    {{/if}}
+
+                    {{#if isDatetime}}
+                    <input type="text" class="form-control gc-searchable-datetime gc-searchable-input"
+                           placeholder="{{../i18n.quick_search}}"
+                           name="{{column_name}}"
+                           step="1"
+                    />
+                    {{/if}}
+
+                    {{#if isBoolean}}
+                    <div class="l5 t5">
+                        <input type="checkbox" name="{{column_name}}" class="gc-searchable-checkbox" value="1" />
+                    </div>
+                    {{/if}}
+
+                    {{#unless knownField}}
+                        <input type="search" class="form-control gc-searchable-input"
+                               placeholder="{{../i18n.quick_search}}"
+                               name="{{column_name}}"/>
+                    {{/unless}}
+            </td>
+        {{/each}}
+
+    {{else}}
+        {{#each table_columns}}
+            <td class="gc-search-column">&nbsp;</td>
+        {{/each}}
+    {{/if}}
+</script>
+<script type="text/x-handlebars-template" class="search-button-template">
+    {{#unless searchAllButton}}
+    <div class="floatR l5 t5 gc-remove-filter-container hidden">
+        <button
+            type="button"
+            class="btn btn-danger gc-remove-filter-button">
+            <i class="fa fa-remove"></i>
+            {{i18n.filtering_remove_filters}}
+        </button>
+    </div>
+    {{/unless}}
+    <div class="floatR l5 search-button-container">
+        <a href="" class="btn {{#if searchAllButton}}btn-primary search-button{{else}}btn-default gc-filter-button{{/if}} btn-outline-dark t5">
+            <i class="fa {{#if searchAllButton}}fa-search{{else}}fa-filter{{/if}}"></i>
+            {{#if searchAllButton}}<input type="text" name="search" class="gc-search-input" />{{/if}}
+            {{#unless searchAllButton}}
+                <span class="gc-filter-text">{{i18n.filtering_filter_text}}</span>
+                <span class="gc-filter-counter hidden">
+                    <span class="gc-filter-counter-number">0</span>
+                    <span class="gc-filter-counter-text hidden">{{i18n.filtering_filter_single}}</span>
+                    <span class="gc-filter-counter-text-plural hidden">{{i18n.filtering_filter_plural}}</span>
+                </span>
+            {{/unless}}
+        </a>
+    </div>
+</script>
+<script type="text/x-handlebars-template" class="paging-entries-template">
+    <div class="floatL t20 l5">
+        <div class="floatL t10">
+            {{i18n.paging_show_entries.first}}
+        </div>
+        <div class="floatL r5 l5 t3 per-page-container"></div>
+        <div class="floatL t10">
+            {{i18n.paging_show_entries.second}}
+        </div>
+        <div class="clear"></div>
+    </div>
+</script>
+
+<script type="text/x-handlebars-template" class="displaying-paging-template">
+    <div class="floatR r10 t30">
+        {{{i18n.paging_displaying}}}
+        <span class="full-total-container hidden">
+            {{{i18n.paging_filtered_from}}}
+        </span>
+    </div>
+</script>
+<script type="text/x-handlebars-template" class="gc-table-row">
+    {{#each rows}}
+        <tr data-id="{{primaryKeyValue}}">
+            {{#if hasActions}}
+                <td class="gc-row-checkbox{{#unless deleteMultipleEnabled}} hideSideBorders size5px{{/unless}}" width="30">
+                    {{#if deleteMultipleEnabled}}
+                        <input type="checkbox" class="gc-select-row" data-id="{{primaryKeyValue}}">
+                    {{/if}}
+                </td>
+                <td class="gc-actions{{#unless deleteMultipleEnabled}} hideSideBorders{{/unless}}">
+                    <div class="gc-actions-container">
+                        {{#if operationEditEnabled}}
+                        <a class="btn btn-default btn-outline-dark gc-edit-button" href="{{editUrl}}" data-primary-key-value="{{primaryKeyValue}}">
+                            <i class="fa fa-pencil"></i> {{i18n.edit}}
+                        </a>
+                        {{/if}}
+
+                        {{#if hasMoreButton}}
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-default dropdown-toggle gc-bootstrap-dropdown gc-more-button">
+                                    {{#if operationEditEnabled}}
+                                        {{i18n.more}}
+                                    {{else}}
+                                        {{i18n.actions}}
+                                    {{/if}}
+                                    <span class="caret"></span>
+                                </button>
+
+                                <ul class="dropdown-menu">
+                                    {{#if operationReadEnabled}}
+                                    <li class="dropdown-item">
+                                        <a href="{{readUrl}}" class="gc-read-button" data-primary-key-value="{{primaryKeyValue}}">
+                                            <i class="fa fa-eye"></i> {{i18n.view}}
+                                        </a>
+                                    </li>
+                                    {{/if}}
+                                    {{#each actionButtons}}
+                                    <li class="dropdown-item">
+                                        <a class="gc-action" href="javascript:" data-primary-key-value="{{../primaryKeyValue}}" data-action-key="{{@index}}">
+                                            <i class="{{iconCssClass}}"></i>
+                                            <span>{{label}}</span>
+                                        </a>
+                                    </li>
+                                    {{/each}}
+                                    {{#each backendActionButtons}}
+                                    <li class="dropdown-item">
+                                        <a href="{{url}}"{{#if newTab}}target="_blank"{{/if}}>
+                                            <i class="{{iconCssClass}}"></i>
+                                            <span>{{label}}</span>
+                                        </a>
+                                    </li>
+                                    {{/each}}
+                                    {{#if operationDeleteEnabled}}
+                                    <li class="dropdown-item">
+                                        <a class="gc-delete-single" href="{{deleteUrl}}" data-primary-key-value="{{primaryKeyValue}}">
+                                            <i class="fa fa-trash-o text-danger"></i>
+                                            <span class="text-danger">{{i18n.action_delete}}</span>
+                                        </a>
+                                    </li>
+                                    {{/if}}
+                                </ul>
+                            </div>
+                        {{else}}
+                            {{#if operationReadEnabled}}
+                            <a href="{{readUrl}}" class="btn btn-default gc-read-button" data-primary-key-value="{{primaryKeyValue}}">
+                                <i class="fa fa-eye"></i> {{i18n.view}}
+                            </a>
+                            {{/if}}
+                            {{#if operationDeleteEnabled}}
+                            <a class="btn btn-default gc-delete-single" href="javascript:void(0)" data-primary-key-value="{{primaryKeyValue}}">
+                                <i class="fa fa-trash-o text-danger"></i>
+                                <span class="text-danger">{{i18n.action_delete}}</span>
+                            </a>
+                            {{/if}}
+                        {{/if}}
+                    </div>
+                </td>
+            {{/if}}
+            {{#each columnsData}}
+                <td>{{{value}}}</td>
+            {{/each}}
+        </tr>
+    {{/each}}
+</script>
+<div class="modal fade gc-filtering-modal gc-visible-but-hidden" role="dialog" tabindex="-1"><div class="gc-filtering-container"></div></div>
+<script type="text/x-handlebars-template" class="gc-footer-template">
+    <div class="paging-entries-container floatL"></div>
+
+    <div class="floatR r5">
+
+        <ul class="pagination {{#if isBootstrapV4}}pagination-bootstrap-v4{{/if}}">
+            <li class="disabled paging-first page-item">
+                <a href="#" class="page-link"><i class="fa fa-step-backward"></i></a>
+            </li>
+            <li class="prev disabled paging-previous page-item">
+                <a href="#" class="page-link"><i class="fa fa-chevron-left"></i></a>
+            </li>
+            <li class="page-item">
+                <span class="{{#unless isBootstrapV4}}page-number-input-container{{/unless}}">
+                    <input type="number" value="1" class="form-control page-number-input" />
+                </span>
+            </li>
+            <li class="next paging-next page-item">
+                <a href="#" class="page-link"><i class="fa fa-chevron-right"></i></a>
+            </li>
+            <li class="paging-last page-item">
+                <a href="#" class="page-link"><i class="fa fa-step-forward"></i></a>
+            </li>
+        </ul>
+
+        <input type="hidden" name="page_number" class="page-number-hidden" value="1" />
+        <input type="hidden" class="gc-order-by-hidden" value="" />
+        <input type="hidden" class="gc-sorting-hidden" value="" />
+
+    </div>
+
+    <div class="displaying-paging-container floatR"></div>
+
+    <div class="clear"></div>
+</script>
+ <div class="modal fade gc-error-modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog gc-error-modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header"></div>
+                <div class="modal-body gc-error-body">
+                    ...
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Ok</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<script type="text/x-handlebars-template" class="gc-modal-error-text-template">
+    <p>We can\'t process the response of the server. This is all we know about it:</p>
+    <p><strong>Summary:</strong>{{textStatus}}</p>
+    <p><strong>Error:</strong>{{errorThrown}}</p>
+    <strong>Response:</strong><br/>
+    <textarea class="gc-code-error-response" readonly="readonly">{{errorAsString}}</textarea><br/>
+    <div class="gc-error-message-html hidden"></div>
+    <a href="javascript:void(0)" class="btn btn-default gc-error-html-preview-button">Preview as HTML</a>
+</script>
+
+<script type="text/x-handlebars-template" class="gc-add-button">
+    {{#if operationAddEnabled}}
+        <div class="floatL t5">
+            <a class="btn btn-default btn-outline-dark button-add" href="{{addUrl}}">
+                <i class="fa fa-plus"></i> &nbsp;
+                {{addItemString}}
+            </a>
+        </div>
+    {{/if}}
+</script>
+
+<script type="text/x-handlebars-template" class="gc-insert-modal-template">
+<div class="modal fade gc-form-operation-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog gc-modal-dialog" role="document">
+        <form class="form-horizontal">
+            <div class="modal-content">
+                <div class="modal-header"></div>
+                <div class="modal-body gc-modal-body">
+                    ...
+                </div>
+                <div class="modal-footer">
+                    <label class="options-on-save">
+                        <input type="checkbox" checked="checked" class="close-modal-on-save" /> {{i18n.close_modal_on_save}}
+                    </label> &nbsp; &nbsp;
+                    <button type="button" class="btn btn-default btn-outline-dark" data-dismiss="modal">{{i18n.close_modal}}</button>
+                    <button type="submit" class="btn btn-primary save-changes">{{i18n.modal_save}}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</script>
+<script type="text/x-handlebars-template" class="gc-export-button">
+    {{#if operationExportEnabled}}
+        <div class="floatR l5">
+            <a class="btn btn-default btn-outline-dark t5 gc-export" download>
+                <i class="fa fa-cloud-download floatL t3"></i>
+                    <span class="hidden-xs floatL r5"> &nbsp;
+                        {{i18n.export_to_file}}
+                    </span>
+                <div class="clear"></div>
+            </a>
+        </div>
+    {{/if}}
+</script>
+<script type="text/x-handlebars-template" class="gc-print-button">
+    {{#if operationPrintEnabled}}
+        <div class="floatR l5 gc-print-container">
+            <a class="btn btn-default btn-outline-dark t5 gc-print" data-url="" href="">
+                <i class="fa fa-print floatL t3"></i>
+                    <span class="hidden-xs floatL l5">
+                        {{i18n.print}}
+                    </span>
+                <div class="clear"></div>
+            </a>
+        </div>
+    {{/if}}
+</script>
+
+<script type="text/x-handlebars-template" class="gc-print-template">
+    <div id="table-container">
+        <div class="print-table">
+            <table>
+                <thead></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</script>
+
+<script type="text/x-handlebars-template" class="gc-print-header">
+    {{#each headerColumns}}
+        <th>
+            {{displayAs}}
+        </th>
+    {{/each}}
+</script>
+
+<script type="text/x-handlebars-template" class="gc-confirm-delete-single">
+    <div class="delete-single-confirmation modal fade">
+        <div class="modal-dialog gc-modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"></div>
+                <div class="modal-body delete-modal">
+                    <p>{{i18n.confirm_delete}}</p>
+                    <div class="content-to-delete"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default btn-outline-dark gc-cancel-button" data-dismiss="modal">
+                        {{i18n.cancel}}
+                    </button>
+                    <button type="button" class="btn btn-danger delete-single-confirmation-button">
+                        {{i18n.action_delete}}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/x-handlebars-template" class="gc-confirm-delete-multiple">
+    <div class="gc-delete-multiple-confirmation modal fade">
+        <div class="modal-dialog gc-modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header"></div>
+                <div class="modal-body delete-modal">
+                    <p>
+                        {{{i18n.confirm_delete_multiple}}}
+                    </p>
+                    <div class="content-to-delete"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default btn-outline-dark" data-dismiss="modal">
+                        {{i18n.cancel}}
+                    </button>
+                    <button type="button" class="btn btn-danger delete-multiple-confirmation-button">
+                        {{i18n.action_delete}}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<div class="loading-opacity hidden">
+    Loading...
+</div>
+<div class="gc-grid-container panel panel-default">
+    <div class="table-container">
+        <form action="" method="post" autocomplete="off" class="gcrud-search-form">
+            <div class="gc-hidden-search-inputs"></div>
+            <div class="header-tools">
+                <div class="gc-remove-filters floatR"></div>
+                <div class="gc-search-filter-button-container floatR"></div>
+                <div class="gc-print-button-container floatR"></div>
+                <div class="gc-export-button-container floatR"></div>
+                <div class="gc-settings-button-container floatR t5"></div>
+            </div>
+            <div class="gc-scrolling-left">
+                <table class="table table-bordered grocery-crud-table table-hover">
+                    <thead>
+                        <tr class="header-columns"></tr>
+                        <tr class="filter-row gc-search-row"></tr>
+                    </thead>
+                    <tbody class="gc-tbody"></tbody>
+                </table>
+            </div>
+            <div class="footer-tools"></div>
+        </form>
+    </div>
+</div>
