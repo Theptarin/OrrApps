@@ -39,7 +39,7 @@ class Example extends CI_Controller {
         ];
     }
 
-    private function _getGroceryCrudEnterprise($bootstrap = true, $jquery = true) {
+    private function _getGroceryCrudEnterprise() {
         $db = $this->_getDbData();
         $config = include(APPPATH . 'config/gcrud-enterprise.php');
         $groceryCrud = new GroceryCrud($config, $db);
