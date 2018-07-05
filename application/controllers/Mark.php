@@ -27,7 +27,7 @@ class Mark extends CI_Controller {
      * @return NULL
      */
     public function index() {
-        $sign_data = $this->authorize_orr->get_sign_data();
+        $sign_data = $this->authorize_orr->getSignData();
         $this->page_value = ['sign_status' => $sign_data['user'] . " - " . $sign_data['status'], 'title' => "Orr projects Sing in", 'topic' => "Welcome to sign in"];
         if ($sign_data['status'] === 'Online') {
             redirect(site_url('Welcome'));

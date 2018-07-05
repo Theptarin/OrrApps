@@ -17,7 +17,7 @@ class ORR_Controller extends CI_Controller {
         //$this->load->library('grocery_CRUD');
         $this->load->library('orr_ACRUD');
 
-        $sign_data_ = $this->Authorize_orr->get_sign_data();
+        $sign_data_ = $this->Authorize_orr->getSignData();
         if ($sign_data_['status'] !== 'Online') {
             redirect(site_url('Mark'));
         } else if (!$this->Authorize_orr->get_sys_exist()) {
@@ -72,7 +72,7 @@ class ORR_Controller extends CI_Controller {
      * 
      */
     protected function set_view($output, $view_name = "project:") {
-        $sign_data_ = $this->Authorize_orr->get_sign_data();
+        $sign_data_ = $this->Authorize_orr->getSignData();
         if (!is_array($output)) {
             $output = is_object($output) ? get_object_vars($output) : array();
         }
@@ -89,7 +89,7 @@ class ORR_Controller extends CI_Controller {
      */
     public function EV_before_insert($EV_post_) {
         //$sign_ = $this->acrud->get_sign_data();
-        $sign_ = $this->Authorize_orr->get_sign_data();
+        $sign_ = $this->Authorize_orr->getSignData();
         $EV_post_['sec_owner'] = $sign_['user'];
         $EV_post_['sec_user'] = $sign_['user'];
         $EV_post_['sec_time'] = date("Y-m-d H:i:s");
@@ -114,7 +114,7 @@ class ORR_Controller extends CI_Controller {
      * @return type
      */
     public function EV_before_update($EV_post_) {
-        $sign_ = $this->Authorize_orr->get_sign_data();
+        $sign_ = $this->Authorize_orr->getSignData();
         $EV_post_['sec_user'] = $sign_['user'];
         $EV_post_['sec_time'] = date("Y-m-d H:i:s");
         $EV_post_['sec_ip'] = $sign_['ip_address'];

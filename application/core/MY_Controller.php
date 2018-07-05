@@ -2,9 +2,7 @@
 
 if (!defined('BASEPATH'))
     exit('No direct script access allowed');
-include(APPPATH . 'libraries/GroceryCrudEnterprise/autoload.php');
-
-use GroceryCrud\Core\GroceryCrud;
+require_once(APPPATH . 'libraries/Orr_ACRUD.php');
 
 /**
  * Description of MY_Controller
@@ -17,10 +15,15 @@ class MY_Controller extends CI_Controller {
         parent::__construct();
         $this->load->helper('url');
     }
+    
+    public function index(){
+        //echo"MyIndex";
+        $this->setMyView((object) array('output' => '', 'js_files' => array(), 'css_files' => array()));
+    }
 
-     public function _getDbData($group) {
+    public function getDbData($group) {
         $db = [];
-        include(APPPATH . 'config/database.php');
+        require_once(APPPATH . 'config/database.php');
         return [
             'adapter' => [
                 'driver' => 'Pdo_Mysql',
@@ -34,21 +37,21 @@ class MY_Controller extends CI_Controller {
     }
 
 
-    public function _getGroceryCrudEnterprise($group='default') {
-        $db = $this->_getDbData($group);
+    public function getOrrACRUD($group='default') {
+        $db = $this->getDbData($group);
         $config = include(APPPATH . 'config/gcrud-enterprise.php');
-        $groceryCrud = new GroceryCrud($config, $db);
-        return $groceryCrud;
+        $OrrACRUD = new Orr_ACRUD($config, $db);
+        return $OrrACRUD;
     }
 
-    protected function _example_output($output = null) {
+    protected function setMyView($output = null,$view="Project_") {
         if (isset($output->isJSONResponse) && $output->isJSONResponse) {
             header('Content-Type: application/json; charset=utf-8');
             echo $output->output;
             exit;
         }
 
-        $this->load->view('example.php', $output);
+        $this->load->view($view, $output);
     }
 
 }

@@ -36,7 +36,7 @@ class Authorize_orr extends CI_Model {
      * คืนค่าสถานะการลงชื่อใช้งาน
      * @return Array
      */
-    public function get_sign_data() {
+    public function getSignData() {
         if ($this->session->has_userdata('sign_data')) {
             $this->set_sign();
         }
