@@ -140,7 +140,7 @@ class ORR_Controller extends CI_Controller {
         } else {
             $txt_log = $EV_log;
         }
-        $this->Authorize_orr->add_activity($EV_name . '=;' . $txt_log);
+        $this->Authorize_orr->addActivity($EV_name . '=;' . $txt_log);
     }
 
 }

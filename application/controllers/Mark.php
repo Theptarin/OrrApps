@@ -39,12 +39,12 @@ class Mark extends CI_Controller {
      * ตรวจสอบรหัสผู้ใช้งาน จากหน้าจอเข้าระบบ
      */
     public function signin() {
-        $this->authorize_orr->sign_in($this->input->post('username'), $this->input->post('password'));
+        $this->authorize_orr->SignIn($this->input->post('username'), $this->input->post('password'));
         redirect('Mark');
     }
 
     public function signout() {
-        $this->authorize_orr->sign_out();
+        $this->authorize_orr->signOut();
         redirect('Welcome');
     }
 

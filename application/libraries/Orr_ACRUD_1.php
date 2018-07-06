@@ -131,7 +131,7 @@ class Orr_ACRUD extends GroceryCrud {
     }
 
     public function add_activity($txt) {
-        $this->auth_model->add_activity($txt);
+        $this->auth_model->addActivity($txt);
     }
 
     public function set_label_as(array $fields) {

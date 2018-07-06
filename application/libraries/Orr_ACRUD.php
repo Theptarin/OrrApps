@@ -29,7 +29,7 @@ class Orr_ACRUD extends GroceryCrud {
         $this->sign_data = $this->getSignData();
         if ($this->sign_data['status'] !== 'Online') {
             redirect(site_url('Mark'));
-        } else if (!$this->auth_model->get_sys_exist()) {
+        } else if (!$this->auth_model->getSysExist()) {
             /**
              * @todo นำไปหน้าที่ตั้งค่าโปรแกรม
              */
@@ -51,7 +51,7 @@ class Orr_ACRUD extends GroceryCrud {
     }
 
     public function setLabelAs(array $fields) {
-        $rows = $this->auth_model->get_fields_label($fields);
+        $rows = $this->auth_model->getFieldsLabel($fields);
         foreach ($rows as $field_) {
             $this->displayAs($field_['field_id'], $field_['name']);
         }
@@ -75,6 +75,10 @@ class Orr_ACRUD extends GroceryCrud {
             $this->default_as[$field_name] = $default_as;
         }
         return $this;
+    }
+    
+    public function AddActivity($txt_log){
+        $this->auth_model->addActivity($txt_log);
     }
 
 }
