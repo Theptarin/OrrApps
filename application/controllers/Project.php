@@ -6,8 +6,8 @@
  * @author it
  */
 class Project extends MY_Controller {
-    
-     /**
+
+    /**
      * Project Page for this controller.
      * @todo Home Page for Orr projects.
      */
@@ -29,27 +29,41 @@ class Project extends MY_Controller {
     }
 
     public function my_sys() {
-        $fields = ['sys_id', 'title', 'description', 'any_use','aut_user', 'aut_group', 'aut_any', 'aut_god', 'aut_can_from'];
+        $fields = ['sys_id', 'title', 'description', 'any_use', 'aut_user', 'aut_group', 'aut_any', 'aut_god', 'aut_can_from'];
         $crud = $this->getOrrACRUD('orr-projects');
-        $crud->setTable('my_sys');
-        $crud->setSubject('MySys', 'ข้อมูลโปรแกรม');
-        $crud->fields($fields);
-        $crud->fieldType($fields[3],'dropdown', $this->use_set)->fieldType($fields[4],'dropdown', $this->aut_set)->
-                fieldType($fields[5],'dropdown', $this->aut_set)->fieldType($fields[6],'dropdown', $this->aut_set)->
-                fieldType($fields[7],'dropdown', $this->use_set);
+        $crud->setTable('my_sys')->setSubject('MySys', 'ข้อมูลโปรแกรม');
+        $crud->columns($fields)->fields($fields);
+        $crud->fieldType($fields[3], 'dropdown', $this->use_set)->fieldType($fields[4], 'dropdown', $this->aut_set)->
+                fieldType($fields[5], 'dropdown', $this->aut_set)->fieldType($fields[6], 'dropdown', $this->aut_set)->
+                fieldType($fields[7], 'dropdown', $this->use_set);
         /**
          * Default value add form
          */
         $crud->callbackAddForm(function ($data) {
-            $data['any_use']=1;
-            $data['aut_user']=3;
-            $data['aut_group']=2;
-            $data['aut_any']=1;
-            $data['aut_god']=1;
+            $data['any_use'] = 1;
+            $data['aut_user'] = 3;
+            $data['aut_group'] = 2;
+            $data['aut_any'] = 1;
+            $data['aut_god'] = 1;
             return $data;
         });
         $output = $crud->render();
         $this->setMyView($output);
+    }
+    
+    public function my_user(){
+        $crud = $this->getOrrACRUD('orr-projects');
+        $crud->setTable('my_user')->setSubject('MyUser', 'ข้อมูลผู้ใช้งาน')->setRead();
+        $output = $crud->render();
+        $this->setMyView($output);
+    }
+    
+    public function eventBeforeInsert($val_) {
+        if(!empty($val_->data['password'])){
+            $val_->data['val_pass'] = md5($val_->data['password']);
+        }
+        $val_->data['password'] = "";
+        return parent::eventBeforeInsert($val_);
     }
 
 }

@@ -33,7 +33,7 @@
         <!-- Beginning header -->
         <div>
             <a href='<?php echo site_url('Project/my_sys') ?>'>MySys</a> | 
-            <a href='<?php echo site_url('Project/employees_management') ?>'>Employees</a> |
+            <a href='<?php echo site_url('Project/my_user') ?>'>MyUser</a> |
             <a href='<?php echo site_url('Project/customers_management') ?>'>Customers</a> |
             <a href='<?php echo site_url('Project/orders_management') ?>'>Orders</a> |
             <a href='<?php echo site_url('Project/products_management') ?>'>Products</a> | 

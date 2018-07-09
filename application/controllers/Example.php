@@ -50,7 +50,8 @@ class Example extends CI_Controller {
         $crud = $this->_getGroceryCrudEnterprise();
         $crud->setTable('customers');
         $crud->setSubject('Customer', 'Customers');
-        $crud->columns(['customerName', 'country', 'state', 'addressLine1']);
+        $crud->fieldType('creditLimit', 'hidden');
+        //$crud->columns(['customerName', 'country', 'state', 'addressLine1']);
         $output = $crud->render();
         $this->_example_output($output);
     }

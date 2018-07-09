@@ -18,6 +18,8 @@ class Orr_ACRUD extends GroceryCrud {
     protected $auth_model = null;
     protected $default_as = [];
     protected $sign_data = [];
+    protected $sec_fields = ['sec_owner', 'sec_user', 'sec_time', 'sec_ip', 'sec_script'];
+    protected $language = 'Thai';
 
     public function __construct($config, $database = null) {
         /**
@@ -40,10 +42,8 @@ class Orr_ACRUD extends GroceryCrud {
          * Access Database.
          */
         parent::__construct($config, $database);
-        $this->fieldType('sec_owner', GroceryCrud::FIELD_TYPE_HIDDEN)->fieldType('sec_user', GroceryCrud::FIELD_TYPE_HIDDEN)->fieldType('sec_time', GroceryCrud::FIELD_TYPE_HIDDEN)->fieldType('sec_ip', GroceryCrud::FIELD_TYPE_HIDDEN)->fieldType('sec_script', GroceryCrud::FIELD_TYPE_HIDDEN);
-
-        $language = 'Thai';
-        $this->setLanguage($language)->setLabelAs(['sec_owner', 'sec_user', 'sec_time', 'sec_ip', 'sec_script']);
+        $this->unsetFields($this->sec_fields)->unsetColumns($this->sec_fields)
+                ->setLanguage($this->language)->setLabelAs(['sec_owner', 'sec_user', 'sec_time', 'sec_ip', 'sec_script']);
     }
 
     public function getSignData() {
@@ -76,8 +76,8 @@ class Orr_ACRUD extends GroceryCrud {
         }
         return $this;
     }
-    
-    public function AddActivity($txt_log){
+
+    public function AddActivity($txt_log) {
         $this->auth_model->addActivity($txt_log);
     }
 
