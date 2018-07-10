@@ -18,7 +18,7 @@ class Orr_ACRUD extends GroceryCrud {
     protected $auth_model = null;
     protected $default_as = [];
     protected $sign_data = [];
-    protected $sec_fields = ['sec_owner', 'sec_user', 'sec_time', 'sec_ip', 'sec_script'];
+    protected $sec_fields = ['sec_owner', 'sec_user', 'sec_time', 'sec_ip', 'sec_script','val_pass'];
     protected $language = 'Thai';
 
     public function __construct($config, $database = null) {
