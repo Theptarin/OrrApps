@@ -35,7 +35,7 @@ class ORR_Controller extends CI_Controller {
      * @return Object
      */
     protected function get_acrud(array $frm_) {
-        $this->acrud = new OrrACRUD();
+        $this->acrud = new Orr_ACRUD();
         $acrud = $this->acrud;
         $acrud->set_table($frm_['table']);
         $acrud->set_subject(isset($frm_['subject']) ? $frm_['subject'] : $this->page_['subject']);
@@ -55,7 +55,7 @@ class ORR_Controller extends CI_Controller {
      * @return object
      */
     protected function get_tabledata(array $frm_) {
-        $this->acrud = new OrrACRUD();
+        $this->acrud = new Orr_ACRUD();
         $tabledata = $this->acrud;
         //$tabledata->set_theme('datatables');
         $tabledata->set_table($frm_['table']);
