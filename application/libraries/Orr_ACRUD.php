@@ -15,7 +15,8 @@ use GroceryCrud\Core\GroceryCrud;
  */
 class Orr_ACRUD extends GroceryCrud {
 
-    protected $auth_model = null;
+    protected $auth_model = NULL;
+    public $orr_model = NULL; 
     protected $default_as = [];
     protected $sign_data = [];
     protected $sec_fields = ['sec_owner', 'sec_user', 'sec_time', 'sec_ip', 'sec_script','val_pass'];
@@ -27,7 +28,9 @@ class Orr_ACRUD extends GroceryCrud {
          */
         $ci = &get_instance();
         $ci->load->model('Authorize_orr');
+        $ci->load->model('OrrModel');
         $this->auth_model = new Authorize_orr();
+        $this->orr_model = new OrrModel();
         $this->sign_data = $this->getSignData();
         if ($this->sign_data['status'] !== 'Online') {
             redirect(site_url('Mark'));
@@ -80,5 +83,8 @@ class Orr_ACRUD extends GroceryCrud {
     public function AddActivity($txt_log) {
         $this->auth_model->addActivity($txt_log);
     }
-
+    
+    public function getAllFields(){
+        return $this->orr_model->getAllFields();
+    }
 }

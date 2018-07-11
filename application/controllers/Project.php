@@ -54,6 +54,7 @@ class Project extends MY_Controller {
     public function my_user(){
         $crud = $this->getOrrACRUD('orr-projects');
         $crud->setTable('my_user')->setSubject('MyUser', 'ข้อมูลผู้ใช้งาน')->setRead();
+        $crud->columns($this->getAllFields());
         $crud->fieldType('status','dropdown', $this->status_set);
         /**
          * Default value add form
@@ -67,10 +68,12 @@ class Project extends MY_Controller {
     }
     
     public function eventBeforeInsert($val_) {
+        /** Error
         if(!empty($val_->data['password'])){
             $val_->data['val_pass'] = md5($val_->data['password']);
         }
         $val_->data['password'] = "";
+         */
         return parent::eventBeforeInsert($val_);
     }
 

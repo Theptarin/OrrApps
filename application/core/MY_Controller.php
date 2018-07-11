@@ -12,6 +12,7 @@ require_once(APPPATH . 'libraries/Orr_ACRUD.php');
 class MY_Controller extends CI_Controller {
 
     protected $OrrACRUD = null;
+    protected $connGroup = "default";
 
     public function __construct() {
         parent::__construct();
@@ -24,7 +25,8 @@ class MY_Controller extends CI_Controller {
     }
 
     public function getDbData($group) {
-        $db = [];
+        $this->connGroup=$group;
+        //$db = [];
         require_once(APPPATH . 'config/database.php');
         return [
             'adapter' => [
@@ -49,6 +51,10 @@ class MY_Controller extends CI_Controller {
                 ->callbackAfterDelete(array($this, 'eventAfterDelete'))
                 ->callbackAfterDeleteMultiple(array($this, 'eventAfterDeleteMultiple'));
         return $this->OrrACRUD;
+    }
+    
+    public function getAllFields(){
+       return $this->OrrACRUD->getAllFields();
     }
 
     protected function setMyView($output = null, $view = "Project_") {
