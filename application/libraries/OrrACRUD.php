@@ -13,7 +13,7 @@ use GroceryCrud\Core\GroceryCrud;
  * @package OrrApps
  * @author Suchart Bunhachirat <suchartbu@gmail.com>
  */
-class Orr_ACRUD extends GroceryCrud {
+class OrrACRUD extends GroceryCrud {
 
     protected $auth_model = null;
     protected $default_as = [];
@@ -26,8 +26,8 @@ class Orr_ACRUD extends GroceryCrud {
          * Access Checking.
          */
         $ci = &get_instance();
-        $ci->load->model('Authorize_orr');
-        $this->auth_model = new Authorize_orr();
+        $ci->load->model('OrrAuthorize');
+        $this->auth_model = new OrrAuthorize();
         $this->sign_data = $this->getSignData();
         if ($this->sign_data['status'] !== 'Online') {
             redirect(site_url('Mark'));
@@ -79,6 +79,12 @@ class Orr_ACRUD extends GroceryCrud {
 
     public function AddActivity($txt_log) {
         $this->auth_model->addActivity($txt_log);
+    }
+    
+    public function getAllColumns() {
+        $primaryKey = ['id'];
+        $allColumns = array_merge($primaryKey,$this->getColumns());
+        return$allColumns;
     }
 
 }

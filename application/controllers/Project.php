@@ -54,6 +54,7 @@ class Project extends MY_Controller {
     public function my_user(){
         $crud = $this->getOrrACRUD('orr-projects');
         $crud->setTable('my_user')->setSubject('MyUser', 'ข้อมูลผู้ใช้งาน')->setRead();
+        $crud->columns($crud->getAllColumns());
         $crud->fieldType('status','dropdown', $this->status_set);
         /**
          * Default value add form
