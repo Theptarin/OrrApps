@@ -25,8 +25,7 @@ class MY_Controller extends CI_Controller {
     }
 
     public function getDbData($group) {
-        $this->connGroup=$group;
-        //$db = [];
+        $db = [];
         require_once(APPPATH . 'config/database.php');
         return [
             'adapter' => [
@@ -43,7 +42,7 @@ class MY_Controller extends CI_Controller {
     public function getOrrACRUD($group = 'default') {
         $db = $this->getDbData($group);
         $config = include(APPPATH . 'config/gcrud-enterprise.php');
-        $this->OrrACRUD = new Orr_ACRUD($config, $db);
+        $this->OrrACRUD = new Orr_ACRUD($config, $db , $group);
         $this->OrrACRUD->callbackBeforeInsert(array($this, 'eventBeforeInsert'))
                 ->callbackAfterInsert(array($this, 'eventAfterInsert'))
                 ->callbackBeforeUpdate(array($this, 'eventBeforeUpdate'))

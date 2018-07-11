@@ -29,9 +29,9 @@ class Project extends MY_Controller {
     }
 
     public function my_sys() {
-        $fields = ['sys_id', 'title', 'description', 'any_use', 'aut_user', 'aut_group', 'aut_any', 'aut_god', 'aut_can_from'];
         $crud = $this->getOrrACRUD('orr-projects');
         $crud->setTable('my_sys')->setSubject('MySys', 'ข้อมูลโปรแกรม');
+        $fields = $this->getAllFields();
         $crud->columns($fields)->fields($fields);
         $crud->fieldType($fields[3], 'dropdown', $this->use_set)->fieldType($fields[4], 'dropdown', $this->aut_set)->
                 fieldType($fields[5], 'dropdown', $this->aut_set)->fieldType($fields[6], 'dropdown', $this->aut_set)->
@@ -50,12 +50,12 @@ class Project extends MY_Controller {
         $output = $crud->render();
         $this->setMyView($output);
     }
-    
-    public function my_user(){
+
+    public function my_user() {
         $crud = $this->getOrrACRUD('orr-projects');
         $crud->setTable('my_user')->setSubject('MyUser', 'ข้อมูลผู้ใช้งาน')->setRead();
         $crud->columns($this->getAllFields());
-        $crud->fieldType('status','dropdown', $this->status_set);
+        $crud->fieldType('status', 'dropdown', $this->status_set);
         /**
          * Default value add form
          */
@@ -66,14 +66,19 @@ class Project extends MY_Controller {
         $output = $crud->render();
         $this->setMyView($output);
     }
-    
+
     public function eventBeforeInsert($val_) {
-        /** Error
-        if(!empty($val_->data['password'])){
-            $val_->data['val_pass'] = md5($val_->data['password']);
+        switch ($this->OrrACRUD->getTable()) {
+            case 'my_user':
+                if (!empty($val_->data['password'])) {
+                    $val_->data['val_pass'] = md5($val_->data['password']);
+                }
+                $val_->data['password'] = "";
+                break;
+
+            default:
+                break;
         }
-        $val_->data['password'] = "";
-         */
         return parent::eventBeforeInsert($val_);
     }
 

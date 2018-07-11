@@ -17,17 +17,14 @@ class OrrModel extends CI_Model {
 
     public function __construct() {
         parent::__construct();
-        $this->db = $this->load->database('orr-projects', TRUE);
     }
 
     public function setDb($conn_group) {
-        
+        $this->db = $this->load->database($conn_group, TRUE);
     }
 
-    public function getAllFields() {
-        // Error
-        $fields = $this->db->list_fields('my_user');
-        return $fields;
+    public function getAllFields($table_name) {
+        return $this->db->list_fields($table_name);
     }
 
 }
