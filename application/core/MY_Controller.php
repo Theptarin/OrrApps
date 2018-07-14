@@ -2,7 +2,7 @@
 
 if (!defined('BASEPATH'))
     exit('No direct script access allowed');
-require_once(APPPATH . 'libraries/Orr_ACRUD.php');
+require_once(APPPATH . 'libraries/OrrACRUD.php');
 
 /**
  * Description of MY_Controller
@@ -42,7 +42,7 @@ class MY_Controller extends CI_Controller {
     public function getOrrACRUD($group = 'default') {
         $db = $this->getDbData($group);
         $config = include(APPPATH . 'config/gcrud-enterprise.php');
-        $this->OrrACRUD = new Orr_ACRUD($config, $db , $group);
+        $this->OrrACRUD = new OrrACRUD($config, $db , $group);
         $this->OrrACRUD->callbackBeforeInsert(array($this, 'eventBeforeInsert'))
                 ->callbackAfterInsert(array($this, 'eventAfterInsert'))
                 ->callbackBeforeUpdate(array($this, 'eventBeforeUpdate'))

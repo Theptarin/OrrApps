@@ -18,7 +18,7 @@ class Mark extends CI_Controller {
     public function __construct() {
         parent::__construct();
         $this->load->helper('url');
-        $this->load->model('authorize_orr');
+        $this->load->model('OrrAuthorize');
     }
 
     /**
@@ -27,7 +27,7 @@ class Mark extends CI_Controller {
      * @return NULL
      */
     public function index() {
-        $sign_data = $this->authorize_orr->getSignData();
+        $sign_data = $this->OrrAuthorize->getSignData();
         $this->page_value = ['sign_status' => $sign_data['user'] . " - " . $sign_data['status'], 'title' => "Orr projects Sing in", 'topic' => "Welcome to sign in"];
         if ($sign_data['status'] === 'Online') {
             redirect(site_url('Welcome'));
@@ -39,12 +39,12 @@ class Mark extends CI_Controller {
      * ตรวจสอบรหัสผู้ใช้งาน จากหน้าจอเข้าระบบ
      */
     public function signin() {
-        $this->authorize_orr->SignIn($this->input->post('username'), $this->input->post('password'));
+        $this->OrrAuthorize->SignIn($this->input->post('username'), $this->input->post('password'));
         redirect('Mark');
     }
 
     public function signout() {
-        $this->authorize_orr->signOut();
+        $this->OrrAuthorize->signOut();
         redirect('Welcome');
     }
 

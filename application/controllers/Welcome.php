@@ -18,7 +18,7 @@ class Welcome extends CI_Controller {
     public function __construct() {
         parent::__construct();
         $this->load->helper('url');
-        $this->load->model('authorize_orr');
+        $this->load->model('OrrAuthorize');
     }
 
     /**
@@ -27,7 +27,7 @@ class Welcome extends CI_Controller {
      * @return NULL
      */
     public function index() {
-        $sign_data = $this->authorize_orr->getSignData();
+        $sign_data = $this->OrrAuthorize->getSignData();
         $this->page_value = array('sign_status' => $sign_data['user'] . " - " . $sign_data['status'], 'title' => "Orr projects", 'topic' => "Welcome...");
         $this->set_view();
     }

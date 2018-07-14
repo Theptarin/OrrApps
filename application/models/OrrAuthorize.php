@@ -7,7 +7,7 @@
  * @author Suchart Bunhachirat <suchartbu@gmail.com>
  * @version 2561
  */
-class Authorize_orr extends CI_Model {
+class OrrAuthorize extends CI_Model {
 
     /**
      * List of all sign data
