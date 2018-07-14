@@ -36,7 +36,7 @@ class Project extends MY_Controller {
         $crud->fieldType('any_use', 'dropdown', $this->use_set)->fieldType('aut_user', 'dropdown', $this->aut_set)->
                 fieldType('aut_group', 'dropdown', $this->aut_set)->fieldType('aut_any', 'dropdown', $this->aut_set)->
                 fieldType('aut_god', 'dropdown', $this->use_set);
-        $crud->setRelation('aut_can_from', 'my_sys', '{title} {sys_id}');
+        //$crud->setRelation('aut_can_from', 'my_sys', '{title} {sys_id}');
         /**
          * Default value add form
          */
@@ -64,6 +64,13 @@ class Project extends MY_Controller {
             $data['status'] = 1;
             return $data;
         });
+        $output = $crud->render();
+        $this->setMyView($output);
+    }
+    
+    public function my_datafield() {
+        $crud = $this->getOrrACRUD('orr-projects');
+        $crud->setTable('my_datafield')->setSubject('MyDatafield', 'คำจำกัดความข้อมูล');
         $output = $crud->render();
         $this->setMyView($output);
     }
