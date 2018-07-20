@@ -33,14 +33,17 @@
         <!-- Beginning header -->
         <div>
             <a href='<?php echo site_url('') ?>'>หน้าหลัก</a> |
-            <a href='<?php echo site_url('Project/my_sys') ?>'>โปรแกรม</a> | 
-            <a href='<?php echo site_url('Project/my_user') ?>'>ผู้ใช้งาน</a> |
-            <a href='<?php echo site_url('Project/my_datafield') ?>'>คำจำกัดความข้อมูล</a> |
+            <a href='<?php echo site_url('IMC/opd_visit') ?>'>ข้อมูลรับบริการผู้ป่วยนอก</a> |
+            <a href='<?php echo site_url('IMC/icd10_code') ?>'>การกำหนดรหัสวินิจฉัยโรค</a> |
+            <a href='<?php echo site_url('IMC/icd10_opd') ?>'>การให้รหัสวินิจฉัยโรคของผู้ป่วยนอก</a> |
+            <a href='<?php echo site_url('IMC/icd10_ipd') ?>'>การให้รหัสวินิจฉัยโรคของผู้ป่วยใน</a>
+
         </div>
         <!-- End of header-->
         <div style='height:20px;'></div> 
         <div>
             <?php echo $output; ?>
+
         </div>
         <!-- Beginning footer -->
         <div>Footer</div>

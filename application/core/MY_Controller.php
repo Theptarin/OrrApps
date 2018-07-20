@@ -18,10 +18,12 @@ class MY_Controller extends CI_Controller {
         parent::__construct();
         $this->load->helper('url');
     }
-
+    /**
+     * Default View of project
+     */
     public function index() {
-        //echo"MyIndex";
-        $this->setMyView((object) array('output' => '', 'js_files' => array(), 'css_files' => array()));
+        $ci_uri = new CI_URI();
+        $this->setMyView((object) array('output' => '', 'js_files' => array(), 'css_files' => array()),$ci_uri->segment(1) . '_');
     }
 
     public function getDbData($group) {
@@ -62,7 +64,12 @@ class MY_Controller extends CI_Controller {
             echo $output->output;
             exit;
         }
-
+        
+        if(is_object($this->OrrACRUD)){
+            $sign_ = $this->OrrACRUD->getSignData();
+            $view = $sign_['project'];
+        }
+        
         $this->load->view($view, $output);
     }
 
