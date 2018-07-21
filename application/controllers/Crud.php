@@ -6,39 +6,13 @@ include(APPPATH . 'libraries/GroceryCrudEnterprise/autoload.php');
 
 use GroceryCrud\Core\GroceryCrud;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/**
- * Description of Example
- *
- * @author it
- */
-class Example extends CI_Controller {
+class Crud extends CI_Controller {
 
     public function __construct() {
         parent::__construct();
         $this->load->helper('url');
     }
 
-    private function _getDbData() {
-        $db = [];
-        include(APPPATH . 'config/database.php');
-        return [
-            'adapter' => [
-                'driver' => 'Pdo_Mysql',
-                'host' => $db['default']['hostname'],
-                'database' => $db['default']['database'],
-                'username' => $db['default']['username'],
-                'password' => $db['default']['password'],
-                'charset' => 'utf8'
-            ]
-        ];
-    }
-    
     private function _getMyDb() {
         $db = [];
         include(APPPATH . 'config/database.php');
@@ -62,21 +36,11 @@ class Example extends CI_Controller {
         return $groceryCrud;
     }
 
-    public function demo_set_model() {
-        $crud = $this->_getGroceryCrudEnterprise();
-        $crud->setTable('customers');
-        $crud->setSubject('Customer', 'Customers');
-        $crud->fieldType('creditLimit', 'hidden');
-        //$crud->columns(['customerName', 'country', 'state', 'addressLine1']);
-        $output = $crud->render();
-        $this->_example_output($output);
-    }
-    
-    public function icd10_opd(){
+    public function icd10_opd() {
         $crud = $this->_getGroceryCrudEnterprise();
         $crud->setTable('imc_icd10_opd');
-        $crud->columns(['visit_date', 'vn', 'hn','opd_principal_diag']);
-        $crud->setRelationNtoN('opd_principal_diag','imc_opd_principal_diag','imc_icd10_code','icd10_opd_id','icd10_code_id','{code} {name_en}');
+        $crud->columns(['visit_date', 'vn', 'hn', 'opd_principal_diag']);
+        $crud->setRelationNtoN('opd_principal_diag', 'imc_opd_principal_diag', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}');
         //$crud->setRelation('signature_opd', 'ttr_hims.doctor_name', '{fname} {lname} [ {doctor_id} ]');
         $output = $crud->render();
         $this->_example_output($output);
