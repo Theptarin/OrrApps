@@ -12,18 +12,18 @@ require_once(APPPATH . 'libraries/OrrACRUD.php');
 class MY_Controller extends CI_Controller {
 
     protected $OrrACRUD = null;
-    protected $connGroup = "default";
 
     public function __construct() {
         parent::__construct();
         $this->load->helper('url');
     }
+
     /**
      * Default View of project
      */
     public function index() {
         $ci_uri = new CI_URI();
-        $this->setMyView((object) array('output' => '', 'js_files' => array(), 'css_files' => array()),$ci_uri->segment(1) . '_');
+        $this->setMyView((object) array('output' => '', 'js_files' => array(), 'css_files' => array()), $ci_uri->segment(1) . '_');
     }
 
     public function getDbData($group) {
@@ -41,21 +41,18 @@ class MY_Controller extends CI_Controller {
         ];
     }
 
-    public function getOrrACRUD($group = 'default') {
-        $db = $this->getDbData($group);
-        $config = include(APPPATH . 'config/gcrud-enterprise.php');
-        $this->OrrACRUD = new OrrACRUD($config, $db , $group);
-        $this->OrrACRUD->callbackBeforeInsert(array($this, 'eventBeforeInsert'))
+    public function getACRUD(OrrACRUD $acrud) {
+        $acrud->callbackBeforeInsert(array($this, 'eventBeforeInsert'))
                 ->callbackAfterInsert(array($this, 'eventAfterInsert'))
                 ->callbackBeforeUpdate(array($this, 'eventBeforeUpdate'))
                 ->callbackAfterUpdate(array($this, 'eventAfterUpdate'))
                 ->callbackAfterDelete(array($this, 'eventAfterDelete'))
                 ->callbackAfterDeleteMultiple(array($this, 'eventAfterDeleteMultiple'));
-        return $this->OrrACRUD;
+        return $this->OrrACRUD = $acrud;
     }
-    
-    public function getAllFields(){
-       return $this->OrrACRUD->getAllFields();
+
+    public function getAllFields() {
+        return $this->OrrACRUD->getAllFields();
     }
 
     protected function setMyView($output = null, $view = "Project_") {
@@ -64,12 +61,12 @@ class MY_Controller extends CI_Controller {
             echo $output->output;
             exit;
         }
-        
-        if(is_object($this->OrrACRUD)){
+
+        if (is_object($this->OrrACRUD)) {
             $sign_ = $this->OrrACRUD->getSignData();
             $view = $sign_['project'];
         }
-        
+
         $this->load->view($view, $output);
     }
 

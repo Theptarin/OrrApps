@@ -1,5 +1,4 @@
 <?php
-
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -18,14 +17,20 @@ class IMC extends MY_Controller {
     }
     
     public function icd10_code(){
-        $crud = $this->getOrrACRUD($this->db_group);
+        $group = "theptarin";
+        $db = $this->getDbData($group);
+        $crud = $this->getACRUD(new OrrACRUD($db, $group));
+        
         $crud->setTable('imc_icd10_code');
         $output = $crud->render();
         $this->setMyView($output);
     }
 
     public function icd10_opd(){
-        $crud = $this->getOrrACRUD($this->db_group);
+        $group = "theptarin";
+        $db = $this->getDbData($group);
+        $crud = $this->getACRUD(new OrrACRUD($db, $group));
+        
         $crud->setTable('imc_icd10_opd');
         $crud->columns(['visit_date', 'vn', 'hn','opd_principal_diag']);
         $crud->setRelationNtoN('opd_principal_diag','imc_opd_principal_diag','imc_icd10_code','icd10_opd_id','icd10_code_id','{code} {name_en}');

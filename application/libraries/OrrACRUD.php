@@ -22,7 +22,7 @@ class OrrACRUD extends GroceryCrud {
     protected $sec_fields = ['sec_owner', 'sec_user', 'sec_time', 'sec_ip', 'sec_script', 'val_pass'];
     protected $language = 'Thai';
 
-    public function __construct($config, $database = null, $conn_group) {
+    public function __construct($database = null, $conn_group) {
         /**
          * Access Checking.
          */
@@ -44,6 +44,7 @@ class OrrACRUD extends GroceryCrud {
         /**
          * Access Database.
          */
+        $config = include(APPPATH . 'config/gcrud-enterprise.php');
         parent::__construct($config, $database);
         $this->OrrModel->setDb($conn_group);
         $this->unsetFields($this->sec_fields)->unsetColumns($this->sec_fields)

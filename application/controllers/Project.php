@@ -19,17 +19,11 @@ class Project extends MY_Controller {
         parent::__construct();
     }
 
-    public function demo_set_model() {
-        $crud = $this->getOrrACRUD();
-        $crud->setTable('customers');
-        $crud->setSubject('Customer', 'Customers');
-        $crud->columns(['customerName', 'country', 'state', 'addressLine1']);
-        $output = $crud->render();
-        $this->setMyView($output);
-    }
-
     public function my_sys() {
-        $crud = $this->getOrrACRUD('orr-projects');
+        $group = "orr-projects";
+        $db = $this->getDbData($group);
+        $crud = $this->getACRUD(new OrrACRUD($db, $group));
+
         $crud->setTable('my_sys')->setSubject('MySys', 'ข้อมูลโปรแกรม');
         $fields = $this->getAllFields();
         $crud->columns($fields)->fields($fields);
@@ -53,7 +47,10 @@ class Project extends MY_Controller {
     }
 
     public function my_user() {
-        $crud = $this->getOrrACRUD('orr-projects');
+        $group = "orr-projects";
+        $db = $this->getDbData($group);
+        $crud = $this->getACRUD(new OrrACRUD($db, $group));
+        
         $crud->setTable('my_user')->setSubject('MyUser', 'ข้อมูลผู้ใช้งาน')->setRead();
         $crud->columns($this->getAllFields());
         $crud->fieldType('status', 'dropdown', $this->status_set);
@@ -67,9 +64,12 @@ class Project extends MY_Controller {
         $output = $crud->render();
         $this->setMyView($output);
     }
-    
+
     public function my_datafield() {
-        $crud = $this->getOrrACRUD('orr-projects');
+        $group = "orr-projects";
+        $db = $this->getDbData($group);
+        $crud = $this->getACRUD(new OrrACRUD($db, $group));
+        
         $crud->setTable('my_datafield')->setSubject('MyDatafield', 'คำจำกัดความข้อมูล');
         $output = $crud->render();
         $this->setMyView($output);
