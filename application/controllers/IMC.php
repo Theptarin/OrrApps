@@ -11,26 +11,26 @@
  * @author it
  */
 class IMC extends MY_Controller {
-    private $db_group="theptarin";
+    
+    private $acrud = NULL;
+    
     public function __construct() {
         parent::__construct();
+        $group = "theptarin";
+        $db = $this->getDbData($group);
+        $this->acrud = new OrrACRUD($db, $group);
+        $this->setACRUD($this->acrud);
     }
     
     public function icd10_code(){
-        $group = "theptarin";
-        $db = $this->getDbData($group);
-        $crud = $this->getACRUD(new OrrACRUD($db, $group));
-        
+        $crud = $this->acrud;
         $crud->setTable('imc_icd10_code');
         $output = $crud->render();
         $this->setMyView($output);
     }
 
     public function icd10_opd(){
-        $group = "theptarin";
-        $db = $this->getDbData($group);
-        $crud = $this->getACRUD(new OrrACRUD($db, $group));
-        
+        $crud = $this->acrud;
         $crud->setTable('imc_icd10_opd');
         $crud->columns(['visit_date', 'vn', 'hn','opd_principal_diag']);
         $crud->setRelationNtoN('opd_principal_diag','imc_opd_principal_diag','imc_icd10_code','icd10_opd_id','icd10_code_id','{code} {name_en}');

@@ -41,6 +41,11 @@ class MY_Controller extends CI_Controller {
         ];
     }
 
+    public function setACRUD(OrrACRUD $acrud){
+        $this->getACRUD($acrud);
+        return $this;
+    }
+
     public function getACRUD(OrrACRUD $acrud) {
         $acrud->callbackBeforeInsert(array($this, 'eventBeforeInsert'))
                 ->callbackAfterInsert(array($this, 'eventAfterInsert'))
