@@ -1,4 +1,5 @@
 <?php
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -11,9 +12,9 @@
  * @author it
  */
 class IMC extends MY_Controller {
-    
+
     private $acrud = NULL;
-    
+
     public function __construct() {
         parent::__construct();
         $group = "theptarin";
@@ -21,21 +22,50 @@ class IMC extends MY_Controller {
         $this->acrud = new OrrACRUD($db, $group);
         $this->setACRUD($this->acrud);
     }
-    
-    public function icd10_code(){
+
+    public function icd10_code() {
         $crud = $this->acrud;
         $crud->setTable('imc_icd10_code');
         $output = $crud->render();
         $this->setMyView($output);
     }
 
-    public function icd10_opd(){
+    public function icd10_opd() {
         $crud = $this->acrud;
         $crud->setTable('imc_icd10_opd');
-        $crud->columns(['visit_date', 'vn', 'hn','opd_principal_diag']);
-        $crud->setRelationNtoN('opd_principal_diag','imc_opd_principal_diag','imc_icd10_code','icd10_opd_id','icd10_code_id','{code} {name_en}');
+        $crud->where(['hn'=>0]);
+        $crud->columns(['visit_date', 'vn', 'hn']);
+        $crud->setRelationNtoN('opd_principal_diag', 'imc_opd_principal_diag', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}');
         //$crud->setRelation('signature_opd', 'ttr_hims.doctor_name', '{fname} {lname} [ {doctor_id} ]');
         $output = $crud->render();
         $this->setMyView($output);
     }
+    
+    public function icd10_ipd(){
+        $crud = $this->acrud;
+        $crud->setTable('imc_icd10_ipd');
+        $crud->columns(['discharge_date', 'an', 'hn']);
+        $crud->setRelationNtoN('ipd_principal_diag','imc_ipd_principal_diag','imc_icd10_code','icd10_ipd_id','icd10_code_id','{code} {name_en}');
+        $crud->setRelationNtoN('ipd_comorbidity_diag','imc_ipd_comorbidity_diag','imc_icd10_code','icd10_ipd_id','icd10_code_id','{code} {name_en}');
+        $crud->setRelationNtoN('ipd_complication_diag','imc_ipd_complication_diag','imc_icd10_code','icd10_ipd_id','icd10_code_id','{code} {name_en}');
+        //$crud->setRelationNtoN('ipd_consultation','imc_ipd_consultation','ttr_hims.doctor_name','icd10_ipd_id','doctor_name_id','{fname} {lname} [ {doctor_id} ]');
+        $crud->setRelationNtoN('ipd_other_diag','imc_ipd_other_diag','imc_icd10_code','icd10_ipd_id','icd10_code_id','{code} {name_en}');
+        $output = $crud->render();
+        $this->setMyView($output);
+    }
+    
+    public function opd_visit() {
+        $crud = $this->acrud;
+        $crud->setTable('imc_opd_visit')->setPrimaryKey('hn', 'imc_opd_visit');
+        $fields = $this->getAllFields();
+        $crud->columns($fields)->fields($fields);
+        //$crud->unsetAdd()->unsetEdit()->unsetDelete();
+        $crud->unsetOperations();
+        $crud->setActionButton('Avatar', 'fa fa-user', function ($row) {
+            return 'icd10_opd#/add';
+        }, true);
+        $output = $crud->render();
+        $this->setMyView($output);
+    }
+
 }
