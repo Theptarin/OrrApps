@@ -26,7 +26,7 @@ class MY_Controller extends CI_Controller {
         $this->setMyView((object) array('output' => '', 'js_files' => array(), 'css_files' => array()), $ci_uri->segment(1) . '_');
     }
 
-    public function getDbData($group) {
+    protected function getDbData($group) {
         $db = [];
         require_once(APPPATH . 'config/database.php');
         return [
@@ -41,12 +41,12 @@ class MY_Controller extends CI_Controller {
         ];
     }
 
-    public function setACRUD(OrrACRUD $acrud){
+    protected function setACRUD(OrrACRUD $acrud) {
         $this->getACRUD($acrud);
         return $this;
     }
 
-    public function getACRUD(OrrACRUD $acrud) {
+    protected function getACRUD(OrrACRUD $acrud) {
         $acrud->callbackBeforeInsert(array($this, 'eventBeforeInsert'))
                 ->callbackAfterInsert(array($this, 'eventAfterInsert'))
                 ->callbackBeforeUpdate(array($this, 'eventBeforeUpdate'))
@@ -56,7 +56,7 @@ class MY_Controller extends CI_Controller {
         return $this->OrrACRUD = $acrud;
     }
 
-    public function getAllFields() {
+    protected function getAllFields() {
         return $this->OrrACRUD->getAllFields();
     }
 

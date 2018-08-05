@@ -53,7 +53,7 @@ class Project extends MY_Controller {
         $crud = $this->acrud;
         $crud->setTable('my_user')->setSubject('MyUser', 'ข้อมูลผู้ใช้งาน')->setRead();
         $crud->columns($this->getAllFields());
-        $crud->fieldType('status', 'dropdown', $this->status_set);
+        $crud->fieldType('status', 'dropdown', $this->status_set)->fieldType('password','password');
         /**
          * Default value add form
          */
