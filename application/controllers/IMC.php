@@ -14,6 +14,7 @@
 class IMC extends MY_Controller {
 
     private $acrud = NULL;
+    public $opd = [];
 
     public function __construct() {
         parent::__construct();
@@ -30,19 +31,28 @@ class IMC extends MY_Controller {
         $this->setMyView($output);
     }
 
-    public function icd10_opd() {
+    public function icd10_opd($dd = "", $mm = "", $yyyy = "", $vn = "", $hn = "", $doctor_id = "") {
+        $this->opd['hn'] = $hn;
+        $this->opd['visit_date'] = $dd . "/" . $mm . "/" . $yyyy;
+        $this->opd['vn'] = $vn;
+        $this->opd['doctor_id'] = $doctor_id;
         $crud = $this->acrud;
-        $crud->setTable('imc_icd10_opd');
-        //$crud->where(['hn' => 0]);
-        $crud->columns(['visit_date', 'vn', 'hn', 'signature_opd']);
+        $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->columns(['visit_date', 'vn', 'hn', 'signature_opd']);
         $crud->setRelationNtoN('opd_principal_diag', 'imc_opd_principal_diag', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}');
-        //print_r($this->_getDoctorName());
+
         if ($crud->getState() === 'Initial') {
-            //$crud->fieldType('hn', 'dropdown_search', $this->_getPatient());
             $crud->fieldType('signature_opd', 'dropdown_search', $this->_getDoctor());
         }
-
-        //$crud->setRelation('signature_opd', 'ttr_hims.doctor_name', '{fname} {lname} [ {doctor_id} ]');
+        /**
+         * Default value add form
+         */
+        $crud->callbackAddForm(function ($data) {
+            $data['visit_date'] = $this->opd['visit_date'];
+            $data['hn'] = $this->opd['hn'];
+            $data['vn'] = $this->opd['vn'];
+            $data['signature_opd'] = $this->opd['doctor_id'];
+            return $data;
+        });
         $output = $crud->render();
         $this->setMyView($output);
     }
@@ -67,8 +77,8 @@ class IMC extends MY_Controller {
         $crud->columns($fields)->fields($fields);
         //$crud->unsetAdd()->unsetEdit()->unsetDelete();
         $crud->unsetOperations();
-        $crud->setActionButton('Avatar', 'fa fa-user', function ($row) {
-            return 'icd10_opd#/add';
+        $crud->setActionButton('ICD10', 'fa fa-user', function ($row) {
+            return 'icd10_opd/' . $row->visit_date . '/' . $row->vn . '/' . $row->hn . '/' . $row->doctor_id . '#/add';
         }, true);
         $output = $crud->render();
         $this->setMyView($output);
