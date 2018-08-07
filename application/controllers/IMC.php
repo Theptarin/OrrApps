@@ -31,27 +31,15 @@ class IMC extends MY_Controller {
         $this->setMyView($output);
     }
 
-    public function icd10_opd($dd = "", $mm = "", $yyyy = "", $vn = "", $hn = "", $doctor_id = "") {
-        $this->opd['hn'] = $hn;
-        $this->opd['visit_date'] = $yyyy . "-" . $mm . "-" . $dd;
-        $this->opd['vn'] = $vn;
-        $this->opd['doctor_id'] = $doctor_id;
-        $this->opd['description'] = "รายละเอียดข้อมูล";
+    public function icd10_opd() {
         $crud = $this->acrud;
-        $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->columns(['visit_date', 'vn', 'hn', 'signature_opd'])
-                ->addFields(['description', 'opd_principal_diag', 'external_cause']);
+        $crud->setTable('imc_icd10_opd')->unsetAdd()->setRead();
         $crud->setRelationNtoN('opd_principal_diag', 'imc_opd_principal_diag', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}');
 
         if ($crud->getState() === 'Initial') {
             $crud->fieldType('signature_opd', 'dropdown_search', $this->_getDoctor());
         }
-        /**
-         * Default value add form
-         */
-        $crud->callbackAddForm(function ($data) {
-            $data['description'] = $this->opd['description'];
-            return $data;
-        });
+
         $output = $crud->render();
         $this->setMyView($output);
     }
