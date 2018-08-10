@@ -50,11 +50,14 @@ class IMC extends MY_Controller {
         $this->opd['vn'] = $vn;
         $this->opd['doctor_id'] = $doctor_id;
         $th_yyyy = $yyyy + 543;
-        $this->opd['description'] = "$dd/$mm/$th_yyyy  VN. $vn HN. " . $this->_getPatient();
+        $this->opd['patient_name'] = $this->_getPatientName();
+        $this->opd['description'] = "วันที่ $dd/$mm/$th_yyyy  HN. $hn VN. $vn แพทย์ " . $this->_getDoctorName();
         $crud = $this->acrud;
-        $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->columns(['hn', 'description'])->unsetEdit()
-                ->setRead()->addFields(['description', 'opd_principal_diag', 'external_cause']);
+        $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->columns(['hn', 'visit_date', 'description'])->unsetEdit()->setRead()
+                ->requiredFields(['description', 'opd_principal_diag'])->addFields(['description', 'opd_principal_diag', 'opd_external_diag'])
+                ->setSubject('ข้อมูลวินิจฉัยโรค ' . $this->opd['patient_name']);
         $crud->setRelationNtoN('opd_principal_diag', 'imc_opd_principal_diag', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}');
+        $crud->setRelationNtoN('opd_external_diag', 'imc_opd_external_diag', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}');
         /**
          * Default value add form
          */
@@ -103,22 +106,35 @@ class IMC extends MY_Controller {
         return $rows;
     }
 
-    private function _getPatient() {
+    private function _getDoctorName() {
+        $this->load->database('theptarin');
+        $sql = "SELECT * FROM `doctor` WHERE `doctor_id` = ?";
+        $query = $this->db->query($sql, [$this->opd['doctor_id']]);
+        $row = $query->row();
+        if (isset($row)) {
+            $doctor_name = $row->doctor_id . " " . $row->doctor_name;
+        } else {
+            $doctor_name = "ไม่มีรหัสแพทย " . $row->doctor_id;
+        }
+        return $doctor_name;
+    }
+
+    private function _getPatientName() {
         $this->load->database('theptarin');
         $sql = "SELECT * FROM `patient`WHERE `hn` = ?";
         $query = $this->db->query($sql, [$this->opd['hn']]);
         $row = $query->row();
         if (isset($row)) {
             $sex = ($row->sex == 'M' ) ? 'ชาย' : 'หญิง';
-            $patient = $row->hn . " " . $row->prefix . $row->fname . " " . $row->lname . " เพศ " . $sex;
+            $patient_name = $row->prefix . $row->fname . " " . $row->lname . " เพศ " . $sex;
             $birthday_date = date_create_from_format('Y-m-d', $row->birthday_date);
             $diff = date_diff($birthday_date, date_create_from_format('Y-m-d', $this->opd['visit_date']));
             $th_yyyy = date_format($birthday_date, 'Y') + 543;
-            $patient .= " วันเกิด " . date_format($birthday_date, 'd/m/') . $th_yyyy . " ณ วันที่มาอายุ  " . $diff->format('%y ปี %m เดือน %d วัน');
+            $patient_name .= " วันเกิด " . date_format($birthday_date, 'd/m/') . $th_yyyy . " ณ วันที่มาอายุ  " . $diff->format('%y ปี %m เดือน %d วัน');
         } else {
-            $patient = "ไม่พบ HN. " . $this->opd['hn'];
+            $patient_name = "ไม่พบ HN. " . $this->opd['hn'];
         }
-        return $patient;
+        return $patient_name;
     }
 
     public function eventBeforeInsert($val_) {
