@@ -34,7 +34,7 @@ class IMC extends MY_Controller {
     public function icd10_hn() {
         $crud = $this->acrud;
         $fields = ['hn','chronic_diag'];
-        $crud->setTable('imc_icd10_hn')->fields($fields)->columns(['hn']);
+        $crud->setTable('imc_icd10_hn')->fields($fields)->columns(['hn'])->addFields(['hn']);
         $crud->setRelationNtoN('chronic_diag', 'imc_hn_chronic_diag', 'imc_icd10_code', 'icd10_hn', 'icd10_code_id', '{code} {name_en}',NULL,['chronic'=>'1']);
         $output = $crud->render();
         $this->setMyView($output);
@@ -62,7 +62,7 @@ class IMC extends MY_Controller {
         $this->opd['patient_name'] = $this->_getPatientName();
         $this->opd['description'] = "วันที่ $dd/$mm/$th_yyyy VN. $vn HN. $hn " . $this->opd['patient_name'] . "  แพทย์ " . $this->_getDoctorName();
         $crud = $this->acrud;
-        $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->columns(['hn', 'visit_date', 'description'])->setRead()
+        $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->columns([ 'visit_date', 'description','signature_opd'])->unsetEdit()->setRead()
                 ->requiredFields(['description', 'opd_principal_diag'])->addFields(['description', 'opd_principal_diag', 'opd_external_diag'])
                 ->setSubject('ข้อมูลวินิจฉัยโรค ' . $this->opd['patient_name']);
         $crud->setRelationNtoN('opd_principal_diag', 'imc_opd_principal_diag', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}');
@@ -108,7 +108,7 @@ class IMC extends MY_Controller {
     private function _getDoctor() {
         $this->load->database('theptarin');
         $query = $this->db->query('SELECT * FROM `doctor`');
-        $rows[] = NULL;
+        //$rows[] = NULL;
         foreach ($query->result() as $row) {
             $rows[$row->doctor_id] = $row->doctor_id . " : " . $row->doctor_name . " : " . $row->category;
         }
