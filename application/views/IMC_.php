@@ -47,7 +47,7 @@
 
         </div>
         <!-- Beginning footer -->
-        <div>Footer</div>
+        <div><?php echo $footer; ?></div>
         <!-- End of Footer -->
     </body>
 </html>

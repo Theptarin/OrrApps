@@ -12,6 +12,7 @@ require_once(APPPATH . 'libraries/OrrACRUD.php');
 class MY_Controller extends CI_Controller {
 
     protected $OrrACRUD = null;
+    protected $MyFooter = "MyFooter";
 
     public function __construct() {
         parent::__construct();
@@ -59,8 +60,17 @@ class MY_Controller extends CI_Controller {
     protected function getAllFields() {
         return $this->OrrACRUD->getAllFields();
     }
+    
+    protected function setMyFooter($footer){
+        $this->MyFooter = $footer;
+    }
+
+    protected function getMyFooter(){
+        return$this->MyFooter;
+    }
 
     protected function setMyView($output = null, $view = "Project_") {
+        $output->footer= $this->getMyFooter();
         if (isset($output->isJSONResponse) && $output->isJSONResponse) {
             header('Content-Type: application/json; charset=utf-8');
             echo $output->output;

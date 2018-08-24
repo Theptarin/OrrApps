@@ -32,6 +32,7 @@ class Test extends MY_Controller {
         $group = "orr-projects";
         $db = $this->getDbData($group);
         $crud = $this->getACRUD(new OrrACRUD($db, $group));
+        $this->setMyFooter($crud->getState());
         $crud->setTable('my_sys')->setSubject('MySys', 'ข้อมูลโปรแกรม');
         $fields = $this->getAllFields();
         $crud->columns($fields)->fields($fields);
