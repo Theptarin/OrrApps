@@ -71,6 +71,13 @@ class Project extends MY_Controller {
         $output = $crud->render();
         $this->setMyView($output);
     }
+    
+    public function my_activity(){
+        $crud = $this->acrud;
+        $crud->setTable('activity_list')->setPrimaryKey('id','activity_list')->unsetOperations()->setRead()->columns($this->getAllFields());
+        $output = $crud->render();
+        $this->setMyView($output);
+    }
 
     public function eventBeforeInsert($val_) {
         switch ($this->OrrACRUD->getTable()) {

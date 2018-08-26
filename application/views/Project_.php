@@ -36,6 +36,7 @@
             <a href='<?php echo site_url('Project/my_sys') ?>'>โปรแกรม</a> | 
             <a href='<?php echo site_url('Project/my_user') ?>'>ผู้ใช้งาน</a> |
             <a href='<?php echo site_url('Project/my_datafield') ?>'>คำจำกัดความข้อมูล</a> |
+            <a href='<?php echo site_url('Project/my_activity') ?>'>กิจกรรรมของโครงการ</a>
         </div>
         <!-- End of header-->
         <div style='height:20px;'></div> 
