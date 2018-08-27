@@ -74,6 +74,9 @@ class Project extends MY_Controller {
     
     public function my_activity(){
         $crud = $this->acrud;
+        /**
+         * Error on view read
+         */
         $crud->setTable('activity_list')->setPrimaryKey('id','activity_list')->unsetOperations()->setRead()->columns($this->getAllFields());
         $output = $crud->render();
         $this->setMyView($output);

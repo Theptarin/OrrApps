@@ -35,7 +35,7 @@ class IMC extends MY_Controller {
         $crud = $this->acrud;
         $fields = ['hn','chronic_diag'];
         $crud->setTable('imc_icd10_hn')->fields($fields)->columns(['hn'])->addFields(['hn']);
-        $crud->setRelationNtoN('chronic_diag', 'imc_hn_chronic_diag', 'imc_icd10_code', 'icd10_hn', 'icd10_code_id', '{code} {name_en}',NULL,['chronic'=>'1']);
+        $crud->setRelationNtoN('chronic_diag', 'imc_icd10_hn_chronic', 'imc_icd10_code', 'icd10_hn', 'icd10_code_id', '{code} {name_en}',NULL,['chronic'=>'1']);
         $output = $crud->render();
         $this->setMyView($output);
     }
@@ -43,7 +43,7 @@ class IMC extends MY_Controller {
     public function icd10_opd() {
         $crud = $this->acrud;
         $crud->setTable('imc_icd10_opd')->unsetAdd()->setRead();
-        $crud->setRelationNtoN('opd_principal_diag', 'imc_opd_principal_diag', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}');
+        $crud->setRelationNtoN('opd_principal_diag', 'imc_icd10_opd_principal', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}');
 
         if ($crud->getState() === 'Initial') {
             $crud->fieldType('signature_opd', 'dropdown_search', $this->_getDoctor());
@@ -65,8 +65,8 @@ class IMC extends MY_Controller {
         $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->columns([ 'visit_date', 'description','signature_opd'])->unsetEdit()->setRead()
                 ->requiredFields(['description', 'opd_principal_diag'])->addFields(['description', 'opd_principal_diag', 'opd_external_diag'])
                 ->setSubject('ข้อมูลวินิจฉัยโรค ' . $this->opd['patient_name']);
-        $crud->setRelationNtoN('opd_principal_diag', 'imc_opd_principal_diag', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}');
-        $crud->setRelationNtoN('opd_external_diag', 'imc_opd_external_diag', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}');
+        $crud->setRelationNtoN('opd_principal_diag', 'imc_icd10_opd_principal', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}');
+        $crud->setRelationNtoN('opd_external_diag', 'imc_icd10_opd_external', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}');
         /**
          * Default value add form
          */
