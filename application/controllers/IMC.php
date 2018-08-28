@@ -26,16 +26,16 @@ class IMC extends MY_Controller {
 
     public function icd10_code() {
         $crud = $this->acrud;
-        $crud->setTable('imc_icd10_code')->fieldType('chronic','checkbox_boolean');
+        $crud->setTable('imc_icd10_code')->fieldType('chronic', 'checkbox_boolean');
         $output = $crud->render();
         $this->setMyView($output);
     }
 
     public function icd10_hn() {
         $crud = $this->acrud;
-        $fields = ['hn','chronic_diag'];
+        $fields = ['hn', 'chronic_diag'];
         $crud->setTable('imc_icd10_hn')->fields($fields)->columns(['hn'])->addFields(['hn']);
-        $crud->setRelationNtoN('chronic_diag', 'imc_icd10_hn_chronic', 'imc_icd10_code', 'icd10_hn', 'icd10_code_id', '{code} {name_en}',NULL,['chronic'=>'1']);
+        $crud->setRelationNtoN('chronic_diag', 'imc_icd10_hn_chronic', 'imc_icd10_code', 'icd10_hn', 'icd10_code_id', '{code} {name_en}', NULL, ['chronic' => '1']);
         $output = $crud->render();
         $this->setMyView($output);
     }
@@ -62,7 +62,7 @@ class IMC extends MY_Controller {
         $this->opd['patient_name'] = $this->_getPatientName();
         $this->opd['description'] = "วันที่ $dd/$mm/$th_yyyy VN. $vn HN. $hn " . $this->opd['patient_name'] . "  แพทย์ " . $this->_getDoctorName();
         $crud = $this->acrud;
-        $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->columns([ 'visit_date', 'description','signature_opd'])->unsetEdit()->setRead()
+        $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->columns(['visit_date', 'description', 'signature_opd'])->unsetEdit()->setRead()
                 ->requiredFields(['description', 'opd_principal_diag'])->addFields(['description', 'opd_principal_diag', 'opd_external_diag'])
                 ->setSubject('ข้อมูลวินิจฉัยโรค ' . $this->opd['patient_name']);
         $crud->setRelationNtoN('opd_principal_diag', 'imc_icd10_opd_principal', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}');
@@ -159,6 +159,21 @@ class IMC extends MY_Controller {
                 break;
         }
         return parent::eventBeforeInsert($val_);
+    }
+    
+    public function eventAfterInsert($val_) {
+        switch ($this->OrrACRUD->getTable()) {
+            case 'imc_icd10_opd':
+               /**
+                * ตรวจสอบรหัสที่บันทึกรหัสโรคเรื้องรังหรือไม่
+                * ถ้ามีตรวจสอบมีการบันทึกข้อมูลของผู้ป่วยมาก่อนหรือไม่
+                */
+                break;
+
+            default:
+                break;
+        }
+        return parent::eventAfterInsert($val_);
     }
 
 }
