@@ -26,7 +26,7 @@ class IMC extends MY_Controller {
 
     public function icd10_code() {
         $crud = $this->acrud;
-        $crud->setTable('imc_icd10_code')->fieldType('chronic', 'checkbox_boolean');
+        $crud->setTable('imc_icd10_code')->fieldType('chronic', 'checkbox_boolean')->fieldType('external_cause', 'checkbox_boolean');
         $output = $crud->render();
         $this->setMyView($output);
     }
@@ -63,10 +63,10 @@ class IMC extends MY_Controller {
         $this->opd['description'] = "วันที่ $dd/$mm/$th_yyyy VN. $vn HN. $hn " . $this->opd['patient_name'] . "  แพทย์ " . $this->_getDoctorName();
         $crud = $this->acrud;
         $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->columns(['visit_date', 'description', 'signature_opd'])->unsetEdit()->setRead()
-                ->requiredFields(['description', 'opd_principal_diag'])->addFields(['description', 'opd_principal_diag', 'opd_external_diag'])
+                ->requiredFields(['description', 'principal_diag'])->addFields(['description', 'principal_diag', 'external_cause'])
                 ->setSubject('ข้อมูลวินิจฉัยโรค ' . $this->opd['patient_name']);
-        $crud->setRelationNtoN('opd_principal_diag', 'imc_icd10_opd_principal', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}');
-        $crud->setRelationNtoN('opd_external_diag', 'imc_icd10_opd_external', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}');
+        $crud->setRelationNtoN('principal_diag', 'imc_icd10_opd_principal', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', ['external_cause' => '0']);
+        $crud->setRelationNtoN('external_cause', 'imc_icd10_opd_external', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', ['external_cause' => '1']);
         /**
          * Default value add form
          */
