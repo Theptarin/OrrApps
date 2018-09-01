@@ -35,7 +35,7 @@ class IMC extends MY_Controller {
         $crud = $this->acrud;
         $fields = ['hn', 'chronic_diag'];
         $crud->setTable('imc_icd10_hn')->fields($fields)->columns(['hn'])->addFields(['hn']);
-        $crud->setRelationNtoN('chronic_diag', 'imc_icd10_hn_chronic', 'imc_icd10_code', 'icd10_hn', 'icd10_code_id', '{code} {name_en}', NULL, ['chronic' => '1']);
+        $crud->setRelationNtoN('chronic_diag', 'imc_icd10_hn_chronic', 'imc_icd10_code', 'icd10_hn', 'icd10_code_id', '{code} {name_en}', 'code', ['chronic' => '1']);
         $output = $crud->render();
         $this->setMyView($output);
     }
@@ -136,10 +136,14 @@ class IMC extends MY_Controller {
         if (isset($row)) {
             $sex = ($row->sex == 'M' ) ? 'ชาย' : 'หญิง';
             $patient_name = $row->prefix . $row->fname . " " . $row->lname . " เพศ " . $sex;
-            $birthday_date = date_create_from_format('Y-m-d', $row->birthday_date);
-            $diff = date_diff($birthday_date, date_create_from_format('Y-m-d', $this->opd['visit_date']));
-            $th_yyyy = date_format($birthday_date, 'Y') + 543;
-            $patient_name .= " วันเกิด " . date_format($birthday_date, 'd/m/') . $th_yyyy . " ณ วันที่มาอายุ  " . $diff->format('%y ปี %m เดือน %d วัน');
+            /**
+             * การคำนวนอายุของผู้ป่วย
+             * 
+             * $birthday_date = date_create_from_format('Y-m-d', $row->birthday_date);
+             * $diff = date_diff($birthday_date, date_create_from_format('Y-m-d', $this->opd['visit_date']));
+             * $th_yyyy = date_format($birthday_date, 'Y') + 543;
+             * $patient_name .= " วันเกิด " . date_format($birthday_date, 'd/m/') . $th_yyyy . " ณ วันที่มาอายุ  " . $diff->format('%y ปี %m เดือน %d วัน');
+             */
         } else {
             $patient_name = "ไม่พบ HN. " . $this->opd['hn'];
         }
@@ -160,14 +164,14 @@ class IMC extends MY_Controller {
         }
         return parent::eventBeforeInsert($val_);
     }
-    
+
     public function eventAfterInsert($val_) {
         switch ($this->OrrACRUD->getTable()) {
             case 'imc_icd10_opd':
-               /**
-                * ตรวจสอบรหัสที่บันทึกรหัสโรคเรื้องรังหรือไม่
-                * ถ้ามีตรวจสอบมีการบันทึกข้อมูลของผู้ป่วยมาก่อนหรือไม่
-                */
+                /**
+                 * ตรวจสอบรหัสที่บันทึกรหัสโรคเรื้องรังหรือไม่
+                 * ถ้ามีตรวจสอบมีการบันทึกข้อมูลของผู้ป่วยมาก่อนหรือไม่
+                 */
                 break;
 
             default:
