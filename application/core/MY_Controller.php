@@ -43,6 +43,7 @@ class MY_Controller extends CI_Controller {
     }
 
     protected function setACRUD(OrrACRUD $acrud) {
+        $this->eventState($acrud->getState());
         $this->getACRUD($acrud);
         return $this;
     }
@@ -60,17 +61,17 @@ class MY_Controller extends CI_Controller {
     protected function getAllFields() {
         return $this->OrrACRUD->getAllFields();
     }
-    
-    protected function setMyFooter($footer){
+
+    protected function setMyFooter($footer) {
         $this->MyFooter = $footer;
     }
 
-    protected function getMyFooter(){
+    protected function getMyFooter() {
         return$this->MyFooter;
     }
 
     protected function setMyView($output = null, $view = "Project_") {
-        $output->footer= $this->getMyFooter();
+        $output->footer = $this->getMyFooter();
         if (isset($output->isJSONResponse) && $output->isJSONResponse) {
             header('Content-Type: application/json; charset=utf-8');
             echo $output->output;
@@ -122,6 +123,10 @@ class MY_Controller extends CI_Controller {
     public function eventAfterDeleteMultiple($val_) {
         $this->addActivityPostLog(print_r($val_, TRUE), 'AfterDeleteMultiple');
         return $val_;
+    }
+
+    public function eventState($state) {
+        return NULL;
     }
 
     protected function addActivityPostLog($EV_log, $EV_name) {

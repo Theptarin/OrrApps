@@ -19,7 +19,7 @@ class Project extends MY_Controller {
 
     public function __construct() {
         parent::__construct();
-        $group = "orr-projects";
+        $group = "orr_projects";
         $db = $this->getDbData($group);
         $this->acrud = new OrrACRUD($db, $group);
         $this->setACRUD($this->acrud);
@@ -53,7 +53,7 @@ class Project extends MY_Controller {
         $crud = $this->acrud;
         $crud->setTable('my_user')->setSubject('MyUser', 'ข้อมูลผู้ใช้งาน')->setRead();
         $crud->columns($this->getAllFields());
-        $crud->fieldType('status', 'dropdown', $this->status_set)->fieldType('password','password');
+        $crud->fieldType('status', 'dropdown', $this->status_set)->fieldType('password', 'password');
         /**
          * Default value add form
          */
@@ -71,13 +71,13 @@ class Project extends MY_Controller {
         $output = $crud->render();
         $this->setMyView($output);
     }
-    
-    public function my_activity(){
+
+    public function my_activity() {
         $crud = $this->acrud;
         /**
          * Error on view read
          */
-        $crud->setTable('activity_list')->setPrimaryKey('id','activity_list')->unsetOperations()->setRead()->columns($this->getAllFields());
+        $crud->setTable('activity_list')->setPrimaryKey('id', 'activity_list')->unsetOperations()->setRead()->columns($this->getAllFields());
         $output = $crud->render();
         $this->setMyView($output);
     }
@@ -95,6 +95,43 @@ class Project extends MY_Controller {
                 break;
         }
         return parent::eventBeforeInsert($val_);
+    }
+
+    public function eventBeforeUpdate($val_) {
+        switch ($this->OrrACRUD->getTable()) {
+            case 'my_user':
+                if (!empty($val_->data['password'])) {
+                    $val_->data['val_pass'] = md5($val_->data['password']);
+                }
+                $val_->data['password'] = "";
+                break;
+
+            default:
+                break;
+        }
+        return parent::eventBeforeUpdate($val_);
+    }
+
+    public function eventAfterUpdate($val_) {
+        return parent::eventAfterUpdate($val_);
+    }
+    
+    public function eventState($state) {
+         if ($state === 'Datagrid') {
+            // Mocking a minimal response of GroceryCRUD with an error message
+            $output = (object) [
+                        'isJSONResponse' => true,
+                        'output' => json_encode(
+                                (object) [
+                                    'message' => 'I am really sorry! It seems that you don\'t have access to edit any customer.',
+                                    'status' => 'failure'
+                                ]
+                        )
+            ];
+            $this->setMyView($output);
+            die();
+        }
+        parent::eventState($state);
     }
 
 }

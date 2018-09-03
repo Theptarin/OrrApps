@@ -26,7 +26,7 @@ class OrrAuthorize extends CI_Model {
     public function __construct() {
         parent::__construct();
         $this->load->library('session');
-        $this->db_auth = $this->load->database('orr-projects', TRUE);
+        $this->db_auth = $this->load->database('orr_projects', TRUE);
 
         $this->sign_data['ip_address'] = $this->getSignIpAddress();
         $this->sign_data['script'] = 'authorize_orr';

@@ -96,11 +96,11 @@ $db['default'] = array(
     'save_queries' => TRUE
 );
 
-$db['orr-projects'] = array(
+$db['orr_projects'] = array(
     'dsn' => '',
     'hostname' => 'localhost',
     'username' => 'orr_projects',
-    'password' => 'orr_projects',
+    'password' => 'orr-projects',
     'database' => 'orr_projects',
     'dbdriver' => 'mysqli',
     'dbprefix' => '',
