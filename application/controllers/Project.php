@@ -103,9 +103,9 @@ class Project extends MY_Controller {
             case 'my_user':
                 if (!empty($val_->data['password'])) {
                     $val_->data['val_pass'] = md5($val_->data['password']);
+                    $this->charge_password = TRUE;
                 }
                 $val_->data['password'] = "";
-                $this->charge_password = TRUE;
                 break;
 
             default:

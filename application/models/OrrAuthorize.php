@@ -107,7 +107,8 @@ class OrrAuthorize extends CI_Model {
                 $this->sign_data['status'] = $this->getSignStatus(FALSE);
             }
         } else {
-            die('Data record is abnormal.');
+            $this->signOut();
+            die('Sign Data record is abnormal.');
         }
     }
 
