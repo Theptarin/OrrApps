@@ -16,6 +16,7 @@ class Project extends MY_Controller {
     private $use_set = ['0' => '0 ระบุ', '1' => '1 ไม่ระบุ'];
     private $aut_set = ['0' => '0 ไม่ได้', '1' => '1 อ่านได้', '2' => '2 เขียนได้', '3' => '3 ลบได้'];
     private $status_set = ['0' => '0 Active', '1' => '1 Inactive'];
+    private $charge_password = FALSE;
 
     public function __construct() {
         parent::__construct();
@@ -104,6 +105,7 @@ class Project extends MY_Controller {
                     $val_->data['val_pass'] = md5($val_->data['password']);
                 }
                 $val_->data['password'] = "";
+                $this->charge_password = TRUE;
                 break;
 
             default:
@@ -113,25 +115,12 @@ class Project extends MY_Controller {
     }
 
     public function eventAfterUpdate($val_) {
-        return parent::eventAfterUpdate($val_);
-    }
-    
-    public function eventState($state) {
-         if ($state === 'Datagrid') {
-            // Mocking a minimal response of GroceryCRUD with an error message
-            $output = (object) [
-                        'isJSONResponse' => true,
-                        'output' => json_encode(
-                                (object) [
-                                    'message' => 'I am really sorry! It seems that you don\'t have access to edit any customer.',
-                                    'status' => 'failure'
-                                ]
-                        )
-            ];
-            $this->setMyView($output);
-            die();
+        if ($this->charge_password) {
+            $sign_url = $this->OrrACRUD->getSignUrl();
+            $message = "<a href=\"$sign_url\">กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่</a>";
+            $this->setMyJsonMessageFailure($message);
         }
-        parent::eventState($state);
+        return parent::eventAfterUpdate($val_);
     }
 
 }

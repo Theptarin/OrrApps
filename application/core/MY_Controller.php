@@ -125,12 +125,119 @@ class MY_Controller extends CI_Controller {
         return $val_;
     }
 
-    public function eventState($state) {
+    /**
+     * Main -> Initial
+     * 
+     * @param type $state
+     * @return type
+     */
+    protected function eventState($state) {
+        switch ($state) {
+            case 'Main':
+                $this->eventMainState();
+            case 'Initial':
+                $this->eventInitialState();
+                break;
+            case 'Datagrid':
+                $this->eventDatagridState();
+                break;
+            case 'AddForm':
+                $this->eventAddFormState();
+                break;
+            case 'Insert':
+                $this->eventInsertState();
+                break;
+            case 'EditForm';
+                $this->eventEditFormState();
+                break;
+            case 'Update';
+                $this->eventUpdateState();
+                break;
+            case 'ReadForm';
+                $this->eventEditFormState();
+                break;
+            case 'RemoveOne';
+                $this->eventRemoveOneState();
+                break;
+            case 'RemoveMultiple';
+                $this->eventRemoveMultipleState();
+                break;
+            default :
+                $this->setMyJsonMessageFailure("State = $state");
+        }
+        return NULL;
+    }
+
+    public function eventMainState() {
+        return NULL;
+    }
+
+    public function eventInitialState() {
+        return NULL;
+    }
+
+    public function eventDatagridState() {
+        return NULL;
+    }
+
+    public function eventAddFormState() {
+        return NULL;
+    }
+
+    public function eventInsertState() {
+        return NULL;
+    }
+
+    public function eventEditFormState() {
+        return NULL;
+    }
+
+    public function eventUpdateState() {
+        return NULL;
+    }
+
+    public function eventReadFormState() {
+        return NULL;
+    }
+
+    public function eventRemoveOneState() {
+        return NULL;
+    }
+
+    public function eventRemoveMultipleState() {
         return NULL;
     }
 
     protected function addActivityPostLog($EV_log, $EV_name) {
         $this->OrrACRUD->AddActivity($EV_name . ' : ' . $EV_log);
+    }
+
+    protected function setMyJsonMessageFailure($message) {
+        $output = (object) [
+                    'isJSONResponse' => TRUE,
+                    'output' => json_encode(
+                            (object) [
+                                'message' => $message,
+                                'status' => 'failure'
+                            ]
+                    )
+        ];
+        $this->setMyView($output);
+        die();
+    }
+    
+     protected function setMyJsonMessageSuccess($message) {
+        $output = (object) [
+                    'isJSONResponse' => TRUE,
+                    'output' => json_encode(
+                            (object) [
+                                'message' => $message,
+                                'status' => 'success'
+                            ]
+                    )
+        ];
+        $this->setMyView($output);
+        die();
     }
 
 }

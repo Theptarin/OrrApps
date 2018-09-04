@@ -33,7 +33,9 @@ class OrrACRUD extends GroceryCrud {
         $this->OrrModel = new OrrModel();
         $this->sign_data = $this->getSignData();
         if ($this->sign_data['status'] !== 'Online') {
-            redirect(site_url('Mark'));
+            echo"TEST";
+            redirect($this->getSignUrl());
+            die();
         } else if (!$this->auth_model->getSysExist()) {
             /**
              * @todo นำไปหน้าที่ตั้งค่าโปรแกรม
@@ -71,7 +73,6 @@ class OrrACRUD extends GroceryCrud {
      * @return void
      */
     public function defaultAs($field_name, $default_as = null) {
-
         if (is_array($field_name)) {
             foreach ($field_name as $field => $default_as) {
                 $this->default_as[$field] = $default_as;
@@ -89,5 +90,8 @@ class OrrACRUD extends GroceryCrud {
     public function getAllFields() {
         return $this->OrrModel->getAllFields($this->getTable());
     }
-
+    
+    public function getSignUrl(){
+        return site_url('Mark');
+    }
 }

@@ -73,7 +73,7 @@ return [
     'filtering_less_than_or_equal' => 'less than or equal',
     'filtering_has' => 'has',
     'filtering_does_not_have' => 'does not have',
-    'error_generic_title' => 'Something went wrong!',
+    'error_generic_title' => 'เอ๊ะ ! ลืมอะไรไปหรือเปล่านะ',
     'preview_as_html' => 'Preview as HTML',
     'preview_as_plain_text' => 'Preview as plain text',
     'clone' => 'Clone',
