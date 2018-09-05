@@ -9,27 +9,32 @@ Orr projects Home
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
         <title><?php echo $page_value['title']; ?></title>
-        <?php foreach ($css_files as $file): ?>
+<?php foreach ($css_files as $file): ?>
             <link type="text/css" rel="stylesheet" href="<?php echo $file; ?>" />
-        <?php endforeach; ?>
-        <?php foreach ($js_files as $file): ?>
+<?php endforeach; ?>
+<?php foreach ($js_files as $file): ?>
             <script src="<?php echo $file; ?>"></script>
-        <?php endforeach; ?>
+<?php endforeach; ?>
     </head>
     <body>
+        <nav class="navbar navbar-inverse">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="<?php echo(site_url()) ?>"><?php echo $page_value['title']; ?></a>
+                </div>
+                <ul class="nav navbar-nav">
+                    <li ><?php echo anchor(site_url('IMC'), 'สารสนเทศเวชสถิติ', ['title' => '']) ?></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li ><?php echo $page_value['mnu_setting'] ?></li>
+                    <li ><?php echo $page_value['mnu_sign'] ?></li>
+                </ul>
+            </div>
+        </nav> 
         <?php
         // put your code here
         ?>
         <div>
-            <?php echo anchor(site_url(), 'หน้าหลัก', ['title' => 'ไปที่หน้าหลักของเว๊บไซต์ หรือโหลดหน้าหลักใหม่']) ?> |
-            <?php echo anchor(site_url('Project'), 'อ๋อโปรเจค', ['title' => 'ไปที่หน้าหลักของโปรเจค หรือโหลดหน้าโปรเจคใหม่']) ?> |
-            <?php echo anchor(site_url('IMC'), 'สารสนเทศเวชสถิติ', ['title' => 'การให้รหัสวินิจฉัยโรค']) ?> |
-            <?php echo anchor(site_url('Hims'), 'ระบบช่วยเหลือ HIMS', ['title' => 'ระบบงานช่วยเสริมระบบ HIMS']) ?> |
-            <?php echo anchor(site_url('Ttr_mse'), 'รายงานสนับสนุน(ttr_mse)', ['title' => 'รายงานเพื่อสนับสนุนการทำงาน']) ?> |
-            <?php echo anchor(base_url("user_guide"), 'คู่มือ', ['title' => "คู่มือการใช้งาน"]) ?> |
-            <?php echo anchor(site_url("Mark/signout"), 'ออกจากระบบ', ['title' => "ออกจากระบบ"]) ?> |
-            <?php echo anchor(site_url('Mark'), 'เข้าสู่ระบบ', ['title' => 'ไปที่หน้าเข้าระบบอื่นๆ']) ?>
-            <?php echo $page_value['sign_status']; ?>
         </div> <div style='height:20px;'></div>  
         <div>
             <?php echo $page_value['topic']; ?>
