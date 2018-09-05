@@ -23,34 +23,28 @@ class OrrACRUD extends GroceryCrud {
     protected $language = 'Thai';
 
     public function __construct($database = null, $conn_group) {
-        /**
-         * Access Checking.
-         */
+
         $ci = &get_instance();
         $ci->load->model('OrrAuthorize');
         $ci->load->model('OrrModel');
         $this->auth_model = new OrrAuthorize();
         $this->OrrModel = new OrrModel();
         $this->sign_data = $this->getSignData();
-        if ($this->sign_data['status'] !== 'Online') {
-            echo"TEST";
-            redirect($this->getSignUrl());
-            die();
-        } else if (!$this->auth_model->getSysExist()) {
-            /**
-             * @todo นำไปหน้าที่ตั้งค่าโปรแกรม
-             */
-            die('ไม่พบโปรแกรม ' . $this->sign_data['script']);
-        }
-
-        /**
-         * Access Database.
-         */
-        $config = include(APPPATH . 'config/gcrud-enterprise.php');
-        parent::__construct($config, $database);
-        $this->OrrModel->setDb($conn_group);
-        $this->unsetFields($this->sec_fields)->unsetColumns($this->sec_fields)
-                ->setLanguage($this->language)->setLabelAs(['sec_owner', 'sec_user', 'sec_time', 'sec_ip', 'sec_script']);
+        if ($this->sign_data['status'] === 'Online') {
+            if ($this->auth_model->getSysExist()) {
+                //Configulation CRUD
+                $config = include(APPPATH . 'config/gcrud-enterprise.php');
+                parent::__construct($config, $database);
+                $this->OrrModel->setDb($conn_group);
+                $this->unsetFields($this->sec_fields)->unsetColumns($this->sec_fields)
+                        ->setLanguage($this->language)->setLabelAs(['sec_owner', 'sec_user', 'sec_time', 'sec_ip', 'sec_script']);
+            } else {
+                /**
+                 * @todo นำไปหน้าที่ตั้งค่าโปรแกรม
+                 */
+                die('ไม่พบโปรแกรม ' . $this->sign_data['script']);
+            }
+        } 
     }
 
     public function getSignData() {
@@ -90,8 +84,9 @@ class OrrACRUD extends GroceryCrud {
     public function getAllFields() {
         return $this->OrrModel->getAllFields($this->getTable());
     }
-    
-    public function getSignUrl(){
+
+    public function getSignUrl() {
         return site_url('Mark');
     }
+
 }

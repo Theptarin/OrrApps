@@ -12,6 +12,7 @@ require_once(APPPATH . 'libraries/OrrACRUD.php');
 class MY_Controller extends CI_Controller {
 
     protected $OrrACRUD = null;
+    protected $SignData = null;
     protected $MyFooter = "MyFooter";
 
     public function __construct() {
@@ -24,7 +25,7 @@ class MY_Controller extends CI_Controller {
      */
     public function index() {
         $ci_uri = new CI_URI();
-        $this->setMyView((object) array('output' => '', 'js_files' => array(), 'css_files' => array()), $ci_uri->segment(1) . '_');
+        $this->setMyView((object) array('output' => '', 'js_files' => array(base_url('assets/grocery-crud/js/jquery/jquery.js')), 'css_files' => array(base_url('assets/grocery-crud/css/bootstrap/bootstrap.css'))), $ci_uri->segment(1) . '_');
     }
 
     protected function getDbData($group) {
@@ -43,9 +44,22 @@ class MY_Controller extends CI_Controller {
     }
 
     protected function setACRUD(OrrACRUD $acrud) {
-        $this->eventState($acrud->getState());
-        $this->getACRUD($acrud);
-        return $this;
+        $sign_ = $acrud->getSignData();
+        if ($sign_['status'] === 'Online') {
+            $this->SignData = $sign_;
+            $this->eventState($acrud->getState());
+            $this->getACRUD($acrud);
+            return $this;
+        } else {
+            $sign_url = $acrud->getSignUrl();
+            $message = "สถานะการเข้าใช้งานไม่ออนไลน์ ในขณะนี้ ";
+            $message .= "<a href=\"$sign_url\"> คลิกที่นี่เพื่อบันทึกเข้าใช้งาน </a>";
+            if ($acrud->getState() === 'Main') {
+                die($message);
+            } else {
+                $this->setMyJsonMessageFailure($message);
+            }
+        }
     }
 
     protected function getACRUD(OrrACRUD $acrud) {
@@ -225,8 +239,8 @@ class MY_Controller extends CI_Controller {
         $this->setMyView($output);
         die();
     }
-    
-     protected function setMyJsonMessageSuccess($message) {
+
+    protected function setMyJsonMessageSuccess($message) {
         $output = (object) [
                     'isJSONResponse' => TRUE,
                     'output' => json_encode(

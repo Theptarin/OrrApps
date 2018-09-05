@@ -117,7 +117,9 @@ class Project extends MY_Controller {
     public function eventAfterUpdate($val_) {
         if ($this->charge_password) {
             $sign_url = $this->OrrACRUD->getSignUrl();
-            $message = "<a href=\"$sign_url\">กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่</a>";
+            $sign_ = $this->OrrACRUD->getSignData();
+            $message ="รหัสผ่านใหม่ของ " . $sign_['user'] ." แล้ว ";
+            $message .= "<a href=\"$sign_url\">กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่</a>";
             $this->setMyJsonMessageFailure($message);
         }
         return parent::eventAfterUpdate($val_);
