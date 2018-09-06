@@ -60,12 +60,23 @@ class IMC extends MY_Controller {
         $this->opd['doctor_id'] = $doctor_id;
         $th_yyyy = $yyyy + 543;
         $this->opd['patient_name'] = $this->_getPatientName();
-        $this->opd['description'] = "วันที่ $dd/$mm/$th_yyyy VN. $vn HN. $hn " . $this->opd['patient_name'] . "  แพทย์ " . $this->_getDoctorName();
+        $this->opd['e10_e11'] = $this->_getHnE10E11();
+        $this->opd['description'] = "วันที่ $dd/$mm/$th_yyyy VN. $vn HN. $hn " . $this->opd['patient_name'] . " " . substr($this->opd['e10_e11'], 0, 3) . " แพทย์ " . $this->_getDoctorName();
         $crud = $this->acrud;
         $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->columns(['visit_date', 'description', 'signature_opd'])->unsetEdit()->setRead()
-                ->requiredFields(['description', 'principal_diag'])->addFields(['description', 'principal_diag', 'external_cause'])
-                ->setSubject('ข้อมูลวินิจฉัยโรค ' . $this->opd['patient_name']);
-        $crud->setRelationNtoN('principal_diag', 'imc_icd10_opd_principal', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', ['external_cause' => '0']);
+                ->requiredFields(['description', 'principal_diag'])->addFields(['description', 'principal_diag', 'external_cause'])->setSubject('ข้อมูลวินิจฉัยโรค ' . $this->opd['patient_name']);
+        switch (substr($this->opd['e10_e11'], 0, 3)) {
+            case 'E10':
+                $where_icd10 = ['external_cause' => '0', 'code NOT LIKE ?' => 'E11%'];
+                break;
+            case 'E11':
+                $where_icd10 = ['external_cause' => '0', 'code NOT LIKE ?' => 'E10%'];
+                break;
+            default:
+                $where_icd10 = ['external_cause' => '0'];
+                break;
+        }
+        $crud->setRelationNtoN('principal_diag', 'imc_icd10_opd_principal', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', $where_icd10);
         $crud->setRelationNtoN('external_cause', 'imc_icd10_opd_external', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', ['external_cause' => '1']);
         /**
          * Default value add form
@@ -148,6 +159,19 @@ class IMC extends MY_Controller {
             $patient_name = "ไม่พบ HN. " . $this->opd['hn'];
         }
         return $patient_name;
+    }
+
+    private function _getHnE10E11() {
+        $this->load->database('theptarin');
+        $sql = "SELECT `code` FROM `icd_hn_E10_E11` WHERE `hn` = ?";
+        $query = $this->db->query($sql, [$this->opd['hn']]);
+        $row = $query->row();
+        if (isset($row)) {
+            $hn_e10_e11 = $row->code;
+        } else {
+            $hn_e10_e11 = FALSE;
+        }
+        return $hn_e10_e11;
     }
 
     public function eventBeforeInsert($val_) {
