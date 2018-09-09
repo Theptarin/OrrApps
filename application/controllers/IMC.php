@@ -192,16 +192,41 @@ class IMC extends MY_Controller {
     public function eventAfterInsert($val_) {
         switch ($this->OrrACRUD->getTable()) {
             case 'imc_icd10_opd':
-                /**
-                 * ตรวจสอบรหัสที่บันทึกรหัสโรคเรื้องรังหรือไม่
-                 * ถ้ามีตรวจสอบมีการบันทึกข้อมูลของผู้ป่วยมาก่อนหรือไม่
-                 */
+                $this->_setOpdPrincipalWithChronic($val_->insertId);
                 break;
 
             default:
                 break;
         }
         return parent::eventAfterInsert($val_);
+    }
+
+    private function _setOpdPrincipalWithChronic($id) {
+        $this->load->database('theptarin');
+        $sql = "SELECT `principal_id`AS `icd10_code_id` , `hn`AS `icd10_hn` FROM `imc_opd_principal_with_chronic`WHERE `id`= ?";
+        $query = $this->db->query($sql, [$id]);
+        if ($query->num_rows() > 0 && $this->_isIcd10Hn()) {
+            foreach ($query->result_array() as $row) {
+                $this->db->insert('imc_icd10_hn_chronic', $row);
+            }
+        }
+    }
+
+    private function _isIcd10Hn() {
+        $status = FALSE;
+        $this->load->database('theptarin');
+        $sql = "SELECT * FROM `imc_icd10_hn` WHERE `hn`= ?";
+        $query = $this->db->query($sql, [$this->opd['hn']]);
+        $row = $query->row();
+        if (isset($row)) {
+            $status = TRUE;
+        } else {
+            $sign_ = $this->acrud->getSignData();
+            $this->db->insert_string('imc_icd10_hn', ['hn' => $hn, 'sec_owner' => $sign_['user'], 'sec_user' => $sign_['user'],
+                'sec_time' => date("Y-m-d H:i:s"), 'sec_ip' => $sign_['ip_address'], 'sec_script' => $sign_['script']]);
+            $status = TRUE;
+        }
+        return $status;
     }
 
 }
