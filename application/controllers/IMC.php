@@ -34,7 +34,7 @@ class IMC extends MY_Controller {
     public function icd10_hn() {
         $crud = $this->acrud;
         $fields = ['hn', 'chronic_diag'];
-        $crud->setTable('imc_icd10_hn')->fields($fields)->columns(['hn'])->addFields(['hn']);
+        $crud->setTable('imc_icd10_hn')->fields($fields)->columns($fields);
         $crud->setRelationNtoN('chronic_diag', 'imc_icd10_hn_chronic', 'imc_icd10_code', 'icd10_hn', 'icd10_code_id', '{code} {name_en}', 'code', ['chronic' => '1']);
         $output = $crud->render();
         $this->setMyView($output);
@@ -194,7 +194,7 @@ class IMC extends MY_Controller {
             case 'imc_icd10_opd':
                 $this->_setOpdPrincipalWithChronic($val_->insertId);
                 break;
-
+            
             default:
                 break;
         }
@@ -207,6 +207,7 @@ class IMC extends MY_Controller {
         $query = $this->db->query($sql, [$id]);
         if ($query->num_rows() > 0 && $this->_isIcd10Hn()) {
             foreach ($query->result_array() as $row) {
+                //Error Duplicate entry
                 $this->db->insert('imc_icd10_hn_chronic', $row);
             }
         }
@@ -222,9 +223,8 @@ class IMC extends MY_Controller {
             $status = TRUE;
         } else {
             $sign_ = $this->acrud->getSignData();
-            $this->db->insert_string('imc_icd10_hn', ['hn' => $hn, 'sec_owner' => $sign_['user'], 'sec_user' => $sign_['user'],
+            $status = $this->db->insert('imc_icd10_hn', ['hn' => $this->opd['hn'], 'sec_owner' => $sign_['user'], 'sec_user' => $sign_['user'],
                 'sec_time' => date("Y-m-d H:i:s"), 'sec_ip' => $sign_['ip_address'], 'sec_script' => $sign_['script']]);
-            $status = TRUE;
         }
         return $status;
     }
