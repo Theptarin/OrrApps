@@ -9,6 +9,7 @@ use GroceryCrud\Core\Model;
 use GroceryCrud\Core\GroceryCrud;
 use GroceryCrud\Core\Error\ErrorMessageInteface;
 use GroceryCrud\Core\Model\ModelFieldType;
+use GroceryCrud\Core\Upload\Transliteration;
 
 class StateAbstract
 {
@@ -133,6 +134,32 @@ class StateAbstract
         }
     }
 
+    public function getExtension($filename) {
+        $splittedFilename = explode('.', $filename);
+        return end($splittedFilename);
+    }
+
+    public function removeExtension($filename) {
+        return preg_replace('/\\.[^.\\s]{3,4}$/', '', $filename);
+    }
+
+    public function transformRawFilename($filename) {
+        // Filter any non existance characters. Filter XSS vulnerability
+        // Also trim multiple whitespaces in a row
+        $filename = trim(filter_var($filename));
+
+        // Covert Translite characters
+        $filename = Transliteration::convertFilename($filename);
+
+        // Replace dot and empty space with dash
+        $filename = str_replace(['.', ' '], '-', $filename);
+
+        // Completely remove any illegal characters
+        $filename = preg_replace("/([^a-zA-Z0-9\-\_ ]+?){1}/i", '', $filename);
+
+        return $filename;
+    }
+
     public function setColumns()
     {
         $allColumns = $this->getColumns(StateAbstract::WITH_PRIMARY_KEY);
@@ -211,6 +238,10 @@ class StateAbstract
         $relationNtoN = $this->gCrud->getRelationNtoN();
         $multiselectFields = $this->getMultiselectFields();
         $dateFields = array_merge($this->getColumnDateFields(), $this->getColumnDatetimeFields());
+        $relations = $this->gCrud->getRelations1toMany();
+
+        $relationWithDependencies = $this->gCrud->getRelationWithDependencies();
+        $dependedRelations = $this->gCrud->getDependedRelation();
 
         foreach ($relationNtoN as $field) {
             $outputData[$field->fieldName] = $model->getRelationNtoNData($field, $primaryKeyValue);
@@ -228,6 +259,27 @@ class StateAbstract
             }
         }
 
+        foreach ($dependedRelations as $dependedRelation) {
+            $fieldName = $dependedRelation->fieldName;
+            $relation = $relations[$fieldName];
+            $fieldNameRelation = $dependedRelation->fieldNameRelation;
+            $dependencyFromField = $dependedRelation->dependencyFromField;
+
+            $outputData[$fieldName] = (object)[
+                'value' => $outputData[$fieldName],
+                'permittedValues' => $this->getRelationalData(
+                    $relation->tableName,
+                    $relation->titleField,
+                    [
+                        $fieldNameRelation =>
+                            is_object($outputData[$dependencyFromField])
+                                ? $outputData[$dependencyFromField]->value
+                                : $outputData[$dependencyFromField]
+                    ],
+                    $relation->orderBy
+                )
+            ];
+        }
 
         return $outputData;
     }
@@ -266,8 +318,8 @@ class StateAbstract
         return $results;
     }
 
-    public function getColumnDateFields() {
-        $fieldTypes = $this->getFieldTypes();
+    public function getColumnDateFields($includePermittedValues = true) {
+        $fieldTypes = $this->getFieldTypes($includePermittedValues);
         $dateTypeColumns = [];
 
         foreach($fieldTypes as $fieldName => $field) {
@@ -279,8 +331,8 @@ class StateAbstract
         return $dateTypeColumns;
     }
 
-    public function getColumnDatetimeFields() {
-        $fieldTypes = $this->getFieldTypes();
+    public function getColumnDatetimeFields($includePermittedValues = true) {
+        $fieldTypes = $this->getFieldTypes($includePermittedValues);
         $dateTypeColumns = [];
 
         foreach($fieldTypes as $fieldName => $field) {
@@ -380,6 +432,15 @@ class StateAbstract
 
         $char_limiter = $config['column_character_limiter'];
 
+        $dependedRelations = $this->gCrud->getDependedRelation();
+        $dependedRelationsIds = [];
+        $dependedRelationsData = [];
+        $relations = $this->gCrud->getRelations1toMany();
+
+        foreach($dependedRelations as $dependedFieldName => $row) {
+            $dependedRelationsIds[$dependedFieldName] = [];
+        }
+
         foreach ($results as &$result) {
             foreach ($result as $columnName => &$columnValue) {
                 if (is_array($columnValue)) {
@@ -394,6 +455,9 @@ class StateAbstract
                     $columnValue = strip_tags($columnValue);
                     if ($char_limiter > 0 && (mb_strlen($columnValue, 'UTF-8') > $char_limiter)) {
                         $columnValue = mb_substr($columnValue, 0 , $char_limiter - 1, 'UTF-8') . '...';
+                    }
+                    if (array_key_exists($columnName, $dependedRelations) && $columnValue) {
+                        $dependedRelationsIds[$columnName][] = $columnValue;
                     }
                 }
             }
@@ -417,7 +481,41 @@ class StateAbstract
             }
         }
 
+        foreach ($dependedRelationsIds as $fieldName => $relationIds) {
+            $dependedRelationsIds[$fieldName] = array_unique($relationIds);
+
+            $relation = $relations[$fieldName];
+            $dependedRelationsData[$fieldName] = $this->getRelationDataIds($this->getRelationalData(
+                $relation->tableName,
+                $relation->titleField,
+                [
+                    'IN_ARRAY' => [
+                        $relation->relationPrimaryKey => $dependedRelationsIds[$fieldName]
+                    ]
+                ]
+            ));
+        }
+
+        if (!empty($dependedRelationsIds)) {
+            foreach ($results as &$row) {
+                foreach ($dependedRelationsIds as $fieldName => $relationIds) {
+                    if (isset($row[$fieldName]) && array_key_exists($row[$fieldName], $dependedRelationsData[$fieldName])) {
+                        $row[$fieldName] = $dependedRelationsData[$fieldName][$row[$fieldName]];
+                    }
+                }
+            }
+        }
+
         return $results;
+    }
+
+    public function getRelationDataIds($data) {
+        $finalData = [];
+        foreach ($data as $row) {
+            $finalData[$row->id] = $row->title;
+        }
+
+        return $finalData;
     }
 
     /**
@@ -661,7 +759,7 @@ class StateAbstract
         return $finalData;
     }
 
-    public function getRelationalData($tableName, $titleField , $where, $orderBy) {
+    public function getRelationalData($tableName, $titleField , $where, $orderBy = null) {
         $model = $this->gCrud->getModel();
 
         // In case we have already cached the primary key for the relational data
@@ -693,10 +791,38 @@ class StateAbstract
         return $data;
     }
 
+    protected function _getDependencies($fieldName, $dependedRelations, $relationWithDependencies) {
+        $dependencies = [];
+
+        if (array_key_exists($fieldName, $dependedRelations)) {
+            $dependencies[] = $dependedRelations[$fieldName]->dependencyFromField;
+        }
+
+        for ($i = 1; $i <= count($dependedRelations); $i++) {
+            $dependencyField = $dependedRelations[$fieldName]->dependencyFromField;
+
+            if (array_key_exists($dependencyField , $dependedRelations)) {
+                $dependencies[] = $dependedRelations[$dependencyField]->dependencyFromField;
+                $fieldName = $dependencyField;
+            } else {
+                break;
+            }
+        }
+
+        return $dependencies;
+    }
+
+    public function getDependedFrom($fieldName, $dependedRelations, $relationWithDependencies) {
+        return
+            array_key_exists($fieldName, $dependedRelations)
+                ? $this->_getDependencies($fieldName, $dependedRelations, $relationWithDependencies)
+                : [];
+    }
+
     /**
      * @return array|Model\ModelFieldType[]
      */
-    public function getFieldTypes()
+    public function getFieldTypes($includePermittedValues = true)
     {
         if ($this->fieldTypes !== null) {
             return $this->fieldTypes;
@@ -720,6 +846,8 @@ class StateAbstract
         }
 
         $relations = $this->gCrud->getRelations1toMany();
+        $dependedRelations = $this->gCrud->getDependedRelation();
+        $relationWithDependencies = $this->gCrud->getRelationWithDependencies();
         $requiredFields = $this->gCrud->getRequiredFields();
 
         foreach ($fieldTypes as $fieldName => $fieldType) {
@@ -727,31 +855,49 @@ class StateAbstract
 
                 $relation = $relations[$fieldName];
 
-                $relationalData = $this->getRelationalData(
-                    $relation->tableName,
-                    $relation->titleField,
-                    $relation->where,
-                    $relation->orderBy
-                );
+                if (array_key_exists($fieldName, $dependedRelations) || array_key_exists($fieldName, $relationWithDependencies)) {
+                    $fieldTypes[$fieldName]->dataType = 'depended_relational';
+                    $fieldTypes[$fieldName]->options = (object)[
+                        'dependedFrom' => $this->getDependedFrom($fieldName, $dependedRelations, $relationWithDependencies)
+                    ];
+                } else {
+                    $fieldTypes[$fieldName]->dataType = 'relational';
+                }
 
-                $fieldTypes[$fieldName]->permittedValues = $relationalData;
-                $fieldTypes[$fieldName]->dataType = 'relational';
+                if ($includePermittedValues) {
+                    if (!array_key_exists($fieldName, $dependedRelations)) {
+                        $relationalData = $this->getRelationalData(
+                            $relation->tableName,
+                            $relation->titleField,
+                            $relation->where,
+                            $relation->orderBy
+                        );
+
+                        $fieldTypes[$fieldName]->permittedValues = $relationalData;
+                    } else {
+                        $fieldTypes[$fieldName]->permittedValues = [];
+                    }
+                }
             }
 
             $fieldTypes[$fieldName]->isRequired = in_array($fieldName, $requiredFields);
         }
 
         foreach ($this->gCrud->getRelationNtoN() as $fieldName => $relation) {
+
             $fieldTypes[$fieldName] = (object)array(
                 'dataType' => 'relational_n_n',
-                'isNullable' => false,
-                'permittedValues' => $this->getRelationalData(
+                'isNullable' => false
+            );
+
+            if ($includePermittedValues) {
+                $fieldTypes[$fieldName]->permittedValues = $this->getRelationalData(
                     $relation->referrerTable,
                     $relation->referrerTitleField,
                     $relation->where,
                     $relation->sortingFieldName
-                )
-            );
+                );
+            }
         }
 
         $manualFieldTypes = $this->gCrud->getFieldTypes();
@@ -788,8 +934,11 @@ class StateAbstract
             }
         }
 
+        $unsetSearchColumns = $this->gCrud->getUnsetSearchColumns();
+
         foreach ($fieldTypes as $fieldName => &$field) {
             $field->isReadOnly = property_exists($field, 'isReadOnly') ? $field->isReadOnly : false;
+            $field->isSearchable = !in_array($fieldName, $unsetSearchColumns);
         }
 
         $this->fieldTypes = $fieldTypes;

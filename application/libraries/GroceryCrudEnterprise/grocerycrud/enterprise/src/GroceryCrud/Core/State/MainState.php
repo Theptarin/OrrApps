@@ -47,6 +47,13 @@ class MainState extends StateAbstract implements StateInterface
 
     }
 
+    public function getLoadSelect2()
+    {
+        $dependentRelations = $this->gCrud->getDependedRelation();
+
+        return count($dependentRelations) > 0 && $this->gCrud->getLoadSelect2();
+    }
+
     public function showList()
     {
         $data = $this->_getCommonData();
@@ -57,6 +64,7 @@ class MainState extends StateAbstract implements StateInterface
         $data->load_jquery = $this->gCrud->getLoadJquery();
         $data->load_bootstrap = $this->gCrud->getLoadBootstrap();
         $data->load_jquery_ui = $this->gCrud->getLoadJqueryUi();
+        $data->load_select2 = $this->getLoadSelect2();
         $data->load_texteditor = !empty($texteditorFields);
         $data->load_modernizr = $this->gCrud->getLoadModernizr();
         $data->load_react = $this->gCrud->getLoadReact();

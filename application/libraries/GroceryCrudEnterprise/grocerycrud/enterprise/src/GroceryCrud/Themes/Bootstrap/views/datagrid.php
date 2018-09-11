@@ -14,14 +14,23 @@
         $this->setCssFile($this->_assetsFolder.'css/jquery-ui/jquery-ui' . $minify_or_not . '.css');
     }
 
-    $this->setCssFile($this->_assetsFolder.'css/grocery-crud-v2.5.7.b3f9619.css');
+    if ($load_select2) {
+        $this->setCssFile($this->_assetsFolder.'css/libraries/select2' . $minify_or_not . '.css');
+    }
+
+    $this->setCssFile($this->_assetsFolder.'css/grocery-crud-v2.6.2.2a58790.css');
 
     // JavaScript
     if ($load_jquery) {
         $this->setJavaScriptFile($this->_assetsFolder . 'js/jquery/jquery' . $minify_or_not .  '.js');
     }
+
     if ($load_jquery_ui) {
         $this->setJavaScriptFile($this->_assetsFolder . 'js/libraries/jquery-ui' . $minify_or_not . '.js');
+    }
+
+    if ($load_select2) {
+        $this->setJavaScriptFile($this->_assetsFolder . 'js/libraries/select2' . $minify_or_not . '.js');
     }
 
     if ($load_react) {
@@ -39,9 +48,9 @@
 
 
     if ($autoload_javascript) {
-        $this->setJavaScriptFile($this->_assetsFolder . 'js/build/grocery-crud-v2.5.7.b3f9619' . $minify_or_not . '.js');
+        $this->setJavaScriptFile($this->_assetsFolder . 'js/build/grocery-crud-v2.6.2.2a58790' . $minify_or_not . '.js');
     } else {
-        $this->setJavaScriptFile($this->_assetsFolder . 'js/build/grocery-crud-no-autoload-v2.5.7.b3f9619' . $minify_or_not . '.js');
+        $this->setJavaScriptFile($this->_assetsFolder . 'js/build/grocery-crud-no-autoload-v2.6.2.2a58790' . $minify_or_not . '.js');
     }
 
 

@@ -47,8 +47,9 @@
     {{#if searchByColumn}}
         {{#each table_columns}}
             <td class="gc-search-column">
+                {{#if isSearchableColumn}}
                     {{#if isEnum}}
-                    <select placeholder="{{../i18n.quick_search}}" name="{{column_name}}" class="form-control gc-searchable-select">
+                    <select placeholder="{{../i18n.quick_search}}" name="{{column_name}}" class="form-control gc-searchable-select{{#if isSearchableDropdown}} gc-with-search-plugin{{/if}}">
                         <option></option>
                         {{#each columnInfo.permittedValues}}
                         <option value="={{this}}">{{this}}</option>
@@ -57,7 +58,7 @@
                     {{/if}}
 
                     {{#if isDropdown}}
-                    <select placeholder="{{../i18n.quick_search}}" name="{{column_name}}" class="form-control gc-searchable-select">
+                    <select placeholder="{{../i18n.quick_search}}" name="{{column_name}}" class="form-control gc-searchable-select{{#if isSearchableDropdown}} gc-with-search-plugin{{/if}}">
                         <option></option>
                         {{#each columnInfo.permittedValues}}
                         <option value="={{@key}}">{{this}}</option>
@@ -69,7 +70,8 @@
                     <select
                             placeholder="{{../i18n.quick_search}}"
                             name="{{column_name}}"
-                            class="form-control gc-searchable-select{{#if isSearchable}} gc-with-search-plugin{{/if}}">
+                            data-field-name="{{column_name}}"
+                            class="form-control gc-searchable-select{{#if isSearchableDropdown}} gc-with-search-plugin{{/if}}{{#if isAjaxSearchable}} gc-with-ajax-search-plugin{{/if}}">
                         <option></option>
                         {{#each columnInfo.permittedValues}}
                         <option value="={{id}}">{{title}}</option>
@@ -81,7 +83,7 @@
                     <select
                             placeholder="{{../i18n.quick_search}}"
                             name="{{column_name}}"
-                            class="form-control gc-searchable-select{{#if isSearchable}} gc-with-search-plugin{{/if}}">
+                            class="form-control gc-searchable-select{{#if isSearchableDropdown}} gc-with-search-plugin{{/if}}">
                         <option></option>
                         {{#each columnInfo.permittedValues}}
                         <option value="{{id}}">{{title}}</option>
@@ -114,6 +116,7 @@
                                placeholder="{{../i18n.quick_search}}"
                                name="{{column_name}}"/>
                     {{/unless}}
+                {{/if}}
             </td>
         {{/each}}
 
@@ -254,7 +257,7 @@
         </tr>
     {{/each}}
 </script>
-<div class="modal fade gc-filtering-modal gc-visible-but-hidden" role="dialog" tabindex="-1"><div class="gc-filtering-container"></div></div>
+<div class="modal fade gc-filtering-modal gc-visible-but-hidden" role="dialog"><div class="gc-filtering-container"></div></div>
 <script type="text/x-handlebars-template" class="gc-footer-template">
     <div class="paging-entries-container floatL"></div>
 

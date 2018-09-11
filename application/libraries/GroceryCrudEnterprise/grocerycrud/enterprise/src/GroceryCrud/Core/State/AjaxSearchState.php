@@ -38,8 +38,9 @@ class AjaxSearchState extends StateAbstract {
         $this->setModel();
 
         $relations = $this->gCrud->getRelations1toMany();
+        $dependedRelations = $this->gCrud->getDependedRelation();
 
-        if (isset($relations[$fieldName])) {
+        if (isset($relations[$fieldName]) && isset($dependedRelations[$fieldName])) {
             $relation = $relations[$fieldName];
             $relationalData = $this->getRelationalData(
                 $relation->tableName,
@@ -49,6 +50,8 @@ class AjaxSearchState extends StateAbstract {
                 ],
                 $relation->orderBy
             );
+        } else {
+            throw new \Exception('field_name: "' . $fieldName . '" is not a depended relation field');
         }
 
         $output = (object) [

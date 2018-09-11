@@ -81,7 +81,8 @@ class State
                 'read-form',
                 'initial',
                 'remove-cache',
-                'clone-form'
+                'clone-form',
+                'depended-relation'
             ]
         );
     }

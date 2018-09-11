@@ -37,7 +37,7 @@ class DatagridState extends StateAbstract {
         $data = !empty($_POST) ? $_POST : $_GET;
 
         return (object)array(
-            'search' => $this->getSearchData(),
+            'search' => $this->getSearchData(false),
             'extended_search' => $this->getExtendedSearchData(),
             'basic_operator' => !empty($data['basic_operator']) ? $data['basic_operator'] : null,
             'page' => !empty($data['page']) && is_numeric($data['page']) ? $data['page'] : null,
@@ -47,11 +47,11 @@ class DatagridState extends StateAbstract {
         );
     }
 
-    public function getSearchData() {
+    public function getSearchData($includePermittedValues = true) {
         $data = !empty($_POST) ? $_POST : $_GET;
 
         $searchData = !empty($data['search']) ? $data['search'] : null;
-        $dateFields = array_merge($this->getColumnDateFields(), $this->getColumnDatetimeFields());
+        $dateFields = array_merge($this->getColumnDateFields($includePermittedValues), $this->getColumnDatetimeFields($includePermittedValues));
 
         $dateFormatData = $this->getDateFormatData();
 
@@ -80,7 +80,7 @@ class DatagridState extends StateAbstract {
                         ? $data['extended_search']
                         : null;
 
-        $dateFields = array_merge($this->getColumnDateFields(), $this->getColumnDatetimeFields());
+        $dateFields = array_merge($this->getColumnDateFields(false), $this->getColumnDatetimeFields(false));
         $dateFormatData = $this->getDateFormatData();
         $dateNeedsFormatting = $dateFormatData->dateNeedsFormatting;
 
@@ -265,6 +265,7 @@ class DatagridState extends StateAbstract {
             }
         }
 
+        $model->setDependedRelation($this->gCrud->getDependedRelation());
         $model->setRelations1ToN($this->getRelations1ToN());
         $model->setRelationNToN($this->getRelationsNToN());
 

@@ -32,6 +32,7 @@ class GroceryCrud implements GroceryCrudInterface
     const FIELD_TYPE_BOOLEAN_CHECKBOX = 'checkbox_boolean';
     const FIELD_TYPE_DROPDOWN = 'dropdown';
     const FIELD_TYPE_DROPDOWN_WITH_SEARCH = 'dropdown_search';
+    const FIELD_TYPE_RELATIONAL_NATIVE = 'relational_native';
     const FIELD_TYPE_PASSWORD = 'password';
     const FIELD_TYPE_EMAIL = 'email';
     const FIELD_TYPE_INTEGER = 'int';
@@ -48,7 +49,7 @@ class GroceryCrud implements GroceryCrudInterface
     const FIELD_TYPE_MULTIPLE_SELECT_SEARCHABLE = 'multiselect_searchable';
     const FIELD_TYPE_MULTIPLE_SELECT_NATIVE = 'multiselect_native';
 
-    const VERSION = '2.5.7';
+    const VERSION = '2.6.2';
 
 	/**
 	 * Specifying the datagrid columns that the end-user will see.
@@ -129,6 +130,12 @@ class GroceryCrud implements GroceryCrudInterface
 	 */
 	protected $_load_jquery = true;
 
+
+	/**
+	 * @var bool
+	 */
+	protected $_load_select2 = true;
+
     /**
      * @var bool
      */
@@ -178,6 +185,16 @@ class GroceryCrud implements GroceryCrudInterface
 	 * @var bool
 	 */
 	protected $_load_read = false;
+
+    /**
+     * @var array
+     */
+    protected $_depended_relation = [];
+
+    /**
+     * @var array
+     */
+    protected $_relation_with_dependencies = [];
 
 	/**
 	 * @var array
@@ -329,6 +346,11 @@ class GroceryCrud implements GroceryCrudInterface
      * @var array
      */
     protected $_callback_columns = [];
+
+    /**
+     * @var array
+     */
+    protected $_unset_search_columns = [];
 
     /**
      * @var array
@@ -1444,6 +1466,34 @@ class GroceryCrud implements GroceryCrudInterface
 		return $this;
 	}
 
+
+    /**
+     * @param string $fieldName
+     * @param string $dependencyFromField
+     * @param string $fieldNameRelation
+     * @return $this
+     */
+	public function setDependentRelation($fieldName, $dependencyFromField, $fieldNameRelation) {
+
+        $this->_depended_relation[$fieldName] = (object)array(
+            'fieldName' => $fieldName,
+            'dependencyFromField' => $dependencyFromField,
+            'fieldNameRelation' => $fieldNameRelation
+        );
+
+        $this->_relation_with_dependencies[$dependencyFromField] = $fieldName;
+
+	    return $this;
+    }
+
+    public function getRelationWithDependencies() {
+        return $this->_relation_with_dependencies;
+    }
+
+    public function getDependedRelation() {
+        return $this->_depended_relation;
+    }
+
 	public function getDbRelations1ToN()
     {
         return $this->_relation_1_n;
@@ -1569,6 +1619,17 @@ class GroceryCrud implements GroceryCrudInterface
         return $this->_unsetAddFields;
     }
 
+    public function unsetSearchColumns($columns)
+    {
+        $this->_unset_search_columns = $columns;
+        return $this;
+    }
+
+    public function getUnsetSearchColumns()
+    {
+        return $this->_unset_search_columns;
+    }
+
 	public function unsetColumns($columns)
 	{
         $this->_unset_columns = $columns;
@@ -1680,6 +1741,15 @@ class GroceryCrud implements GroceryCrudInterface
 		$this->_load_jquery = false;
 		return $this;
 	}
+
+    /**
+     * @return $this
+     */
+    public function unsetSelect2()
+    {
+        $this->_load_select2 = false;
+        return $this;
+    }
 
     /**
      * @return $this
@@ -1829,6 +1899,14 @@ class GroceryCrud implements GroceryCrudInterface
 	public function getLoadJquery()
 	{
 		return $this->_load_jquery;
+	}
+
+    /**
+     * @return bool
+     */
+	public function getLoadSelect2()
+	{
+		return $this->_load_select2;
 	}
 
     /**

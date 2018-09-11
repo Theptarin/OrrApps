@@ -51,6 +51,18 @@ class DeleteFileState extends StateAbstract {
     }
 
     public function deleteFile($filename, $path) {
-        return unlink($path . '/' . $filename);
+        // Transform filename for security issues
+        $extension = $this->getExtension($filename);
+        $filename = $this->transformRawFilename($this->removeExtension($filename));
+
+        if ($extension) {
+            $filename .= '.' . $extension;
+        }
+
+        if (file_exists($path . '/' . $filename)) {
+            return unlink($path . '/' . $filename);
+        }
+
+        return true;
     }
 }

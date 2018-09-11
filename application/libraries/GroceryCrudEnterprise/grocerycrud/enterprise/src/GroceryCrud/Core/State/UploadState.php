@@ -5,7 +5,6 @@ use GroceryCrud\Core\Exceptions\Exception;
 use GroceryCrud\Core\GroceryCrud as GCrud;
 use GroceryCrud\Core\Render\RenderAbstract;
 use GroceryCrud\Core\Error\ErrorMessage;
-use GroceryCrud\Core\Upload\Transliteration;
 
 class UploadState extends StateAbstract {
 
@@ -65,28 +64,7 @@ class UploadState extends StateAbstract {
 
     }
 
-    protected function removeExtension($filename) {
-        return preg_replace('/\\.[^.\\s]{3,4}$/', '', $filename);
-    }
-
-    protected function transformRawFilename($filename) {
-        // Filter any non existance characters. Filter XSS vulnerability
-        // Also trim multiple whitespaces in a row
-        $filename = trim(filter_var($filename));
-
-        // Covert Translite characters
-        $filename = Transliteration::convertFilename($filename);
-
-        // Replace dot and empty space with dash
-        $filename = str_replace(['.', ' '], '-', $filename);
-
-        // Completely remove any illegal characters
-        $filename = preg_replace("/([^a-zA-Z0-9\-\_ ]+?){1}/i", '', $filename);
-
-        return $filename;
-    }
-
-    protected function upload($fieldName, $uploadPath)
+    public function upload($fieldName, $uploadPath)
     {
         $storage = new \Upload\Storage\FileSystem($uploadPath);
         $file = new \Upload\File($fieldName, $storage);

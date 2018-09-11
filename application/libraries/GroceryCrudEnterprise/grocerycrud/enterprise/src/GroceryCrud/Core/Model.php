@@ -36,6 +36,7 @@ class Model implements ModelInterface
     protected $_filters_or;
     protected $_relation_1_n = [];
     protected $_relation_n_n = [];
+    protected $_depended_relation = [];
     protected $_columns = [];
     protected $_relation_n_n_columns = [];
     protected $_fieldTypes = [];
@@ -197,7 +198,23 @@ class Model implements ModelInterface
         $select->from($tableName);
 
         if ($where !== null) {
-            $select->where($where);
+
+            if (is_array($where) && array_key_exists('IN_ARRAY', $where)) {
+                $predicate = new Predicate\In();
+                $fieldName = key($where['IN_ARRAY']);
+                if (!empty($where['IN_ARRAY'][$fieldName])) {
+                    $select->where(
+                        $predicate
+                            ->setValueSet($where['IN_ARRAY'][$fieldName])
+                            ->setIdentifier($fieldName)
+                    );
+                } else {
+                    // Always return an empty array
+                    $select->where("(1 = 0)");
+                }
+            } else {
+                $select->where($where);
+            }
         }
 
         $select = $this->extraJoinRelationalData($tableName, $select);
@@ -413,7 +430,7 @@ ORDER BY KU.TABLE_NAME, KU.ORDINAL_POSITION;");
         $select = $this->joinStatements($select);
 
         $select->where([
-            $primaryKeyField . ' = ?' => $primaryKeyValue
+            $this->tableName . '.' . $primaryKeyField . ' = ?' => $primaryKeyValue
         ]);
         if ($this->_where !== null) {
             $select->where($this->_where);
@@ -523,7 +540,7 @@ ORDER BY KU.TABLE_NAME, KU.ORDINAL_POSITION;");
         ]);
         $select->from($this->tableName);
         $select->where([
-            $primaryKeyField => $id
+            $this->tableName . '.' . $primaryKeyField => $id
         ]);
 
         if ($this->_where !== null) {
@@ -685,6 +702,12 @@ ORDER BY KU.TABLE_NAME, KU.ORDINAL_POSITION;");
         return $fieldTypes;
     }
 
+
+    public function setDependedRelation($dbRelations)
+    {
+        $this->_depended_relation = $dbRelations;
+    }
+
     public function setRelations1ToN($dbRelations)
     {
         $this->_relation_1_n = $dbRelations;
@@ -734,10 +757,11 @@ ORDER BY KU.TABLE_NAME, KU.ORDINAL_POSITION;");
     public function joinStatements($select)
     {
         foreach ($this->_relation_1_n as $relation) {
-            // For optimizing reasons we are joining the tables ONLY for two scenarios:
+            // For optimizing reasons we are joining the tables ONLY for 3 scenarios:
             // 1. When we have an order by the field
             // 2. The relation has a where statement
-            if ($this->orderBy === $relation->fieldName || $relation->where !== null) {
+            // 3. When we have a depended relation
+            if (array_key_exists($relation->fieldName, $this->_depended_relation) || $this->orderBy === $relation->fieldName || $relation->where !== null) {
                 $select->join(
                     $relation->tableName,
                     $this->tableName . '.' . $relation->fieldName . ' = ' . $relation->tableName . '.' . $relation->relationPrimaryKey,
@@ -886,9 +910,7 @@ ORDER BY KU.TABLE_NAME, KU.ORDINAL_POSITION;");
             return null;
         }
 
-        $row = $resultSet->current();
-
-        return $row;
+        return $resultsArray;
     }
 
     /**
@@ -933,7 +955,7 @@ ORDER BY KU.TABLE_NAME, KU.ORDINAL_POSITION;");
 
         $row = $this->getRowFromSelect($select, $sql);
 
-        return ((int)$row['num'] === 0);
+        return ((int)$row[0]['num'] === 0);
     }
 
     function insertRelationManytoMany($fieldInfo, $data , $primaryKey)
@@ -1076,11 +1098,17 @@ ORDER BY KU.TABLE_NAME, KU.ORDINAL_POSITION;");
         return $results;
     }
 
+    public function getColumns() {
+        $columns = $this->_columns;
+
+        return $columns;
+    }
+
     public function getList()
     {
         $sql = new Sql($this->adapter);
         $select = $sql->select();
-        $select->columns($this->_columns);
+        $select->columns($this->getColumns());
         $select->limit($this->limit);
         $select->offset(($this->limit * ($this->page - 1)));
 
