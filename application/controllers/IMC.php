@@ -18,6 +18,7 @@ class IMC extends MY_Controller {
     private $vn = NULL;
     private $visit_date = NULL;
     private $doctor_id = NULL;
+    private $chronic_diag = NULL;
     public $opd = NULL;
 
     public function __construct() {
@@ -48,6 +49,7 @@ class IMC extends MY_Controller {
         $crud = $this->acrud;
         $crud->setTable('imc_icd10_opd')->unsetAdd()->setRead();
         $crud->setRelationNtoN('opd_principal_diag', 'imc_icd10_opd_principal', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}');
+        $crud->setRelationNtoN('opd_external_cause', 'imc_icd10_opd_external', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', ['external_cause' => '1']);
 
         if ($crud->getState() === 'Initial') {
             $crud->fieldType('signature_opd', 'dropdown_search', $this->_getDoctor());
@@ -58,18 +60,19 @@ class IMC extends MY_Controller {
     }
 
     public function icd10_opd_add($dd = "", $mm = "", $yyyy = "", $vn = "", $hn = "", $doctor_id = "") {
+        $this->load->model('ImcModel');
         $this->hn = $hn;
         $this->visit_date = $yyyy . "-" . $mm . "-" . $dd;
         $this->vn = $vn;
         $this->doctor_id = $doctor_id;
         $th_yyyy = $yyyy + 543;
-        $patient_name = $this->_getPatientName();
-        $chronic_diag = $this->_getChronicDiag();
-        $this->description = "วันที่ $dd/$mm/$th_yyyy VN. $vn HN. $hn " . $patient_name . " " . " แพทย์ " . $this->_getDoctorName() . " " . $chronic_diag['diag_list'];
+        $patient_data = $this->ImcModel->getPatientData($hn);
+        $chronic_diag = $this->ImcModel->getChronicDiag();
+        $this->description = "วันที่ $dd/$mm/$th_yyyy VN. $vn HN. $hn " . $patient_data['name'] . " เพศ " . $patient_data['sex'] . " แพทย์ " . $this->_getDoctorName() . " " . $chronic_diag['description'];
         $crud = $this->acrud;
-        $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->columns(['visit_date', 'description', 'signature_opd'])->unsetEdit()->setRead()
-                ->requiredFields(['description', 'principal_diag'])->addFields(['description', 'principal_diag', 'external_cause'])->setSubject('ข้อมูลวินิจฉัยโรค ' . $patient_name);
-        $crud->setRelationNtoN('principal_diag', 'imc_icd10_opd_principal', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', $chronic_diag['sql_where']);
+        $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->columns(['visit_date', 'description', 'signature_opd'])->setRead()
+                ->requiredFields(['description', 'principal_diag'])->addFields(['description', 'principal_diag', 'external_cause'])->setSubject('ข้อมูลวินิจฉัยโรค HN. ' . $patient_data['hn'] . " " . $patient_data['name']);
+        $crud->setRelationNtoN('principal_diag', 'imc_icd10_opd_principal', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', $this->_getPrincipalWhereSQL($chronic_diag));
         $crud->setRelationNtoN('external_cause', 'imc_icd10_opd_external', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', ['external_cause' => '1']);
         /**
          * Default value add form
@@ -80,6 +83,20 @@ class IMC extends MY_Controller {
         });
         $output = $crud->render();
         $this->setMyView($output);
+    }
+
+    private function _getPrincipalWhereSQL($chronic_diag) {
+        if ($chronic_diag['is_e10'] && $chronic_diag['is_e11']) {
+            $message = "HN. " . $chronic_diag['hn'] . " พบว่ามีรหัส E10 E11 ในข้อมูลโรคประจำตัว [ " . $chronic_diag['description'] . " ]";
+            die($message);
+        } else if ($chronic_diag['is_e10']) {
+            $my_val = ['external_cause' => '0', 'code NOT LIKE ?' => 'E11%'];
+        } elseif ($chronic_diag['is_e11']) {
+            $my_val = ['external_cause' => '0', 'code NOT LIKE ?' => 'E10%'];
+        } else {
+            $my_val = ['external_cause' => '0'];
+        }
+        return $my_val;
     }
 
     public function icd10_ipd() {
@@ -132,56 +149,6 @@ class IMC extends MY_Controller {
         return $doctor_name;
     }
 
-    private function _getPatientName() {
-        $this->load->database('theptarin');
-        $sql = "SELECT * FROM `patient`WHERE `hn` = ?";
-        $query = $this->db->query($sql, [$this->hn]);
-        $row = $query->row();
-        if (isset($row)) {
-            $sex = ($row->sex == 'M' ) ? 'ชาย' : 'หญิง';
-            $patient_name = $row->prefix . $row->fname . " " . $row->lname . " เพศ " . $sex;
-            /**
-             * การคำนวนอายุของผู้ป่วย
-             * 
-             * $birthday_date = date_create_from_format('Y-m-d', $row->birthday_date);
-             * $diff = date_diff($birthday_date, date_create_from_format('Y-m-d', $this->visit_date));
-             * $th_yyyy = date_format($birthday_date, 'Y') + 543;
-             * $patient_name .= " วันเกิด " . date_format($birthday_date, 'd/m/') . $th_yyyy . " ณ วันที่มาอายุ  " . $diff->format('%y ปี %m เดือน %d วัน');
-             */
-        } else {
-            $patient_name = "ไม่พบ HN. " . $this->hn;
-        }
-        return $patient_name;
-    }
-
-    /**
-     * คืนข้อมูลโรคประจำตัวผู้ป่วย และกำหนดค่าที่เกี่ยวข้องอื่นๆ
-     * @return string
-     */
-    private function _getChronicDiag() {
-        $this->load->database('theptarin');
-        $sql = "SELECT * FROM `icd10_hn_chronic_list` WHERE `hn`= ?";
-        $query = $this->db->query($sql, [$this->hn]);
-        $my_val['diag_list'] = "\n";
-        
-        foreach ($query->result_array() as $row) {
-            $my_val['diag_list'] .= $row['chronic_code'] . " " . $row['chronic_name'] . "\n";
-            $diabetes_code = (substr($row['chronic_code'], 0, 3) );
-            switch (substr($row['chronic_code'], 0, 3)) {
-                case 'E10':
-                    $my_val['sql_where'] = ['external_cause' => '0', 'code NOT LIKE ?' => 'E11%'];
-                    break;
-                case 'E11':
-                    $my_val['sql_where'] = ['external_cause' => '0', 'code NOT LIKE ?' => 'E10%'];
-                    break;
-                default:
-                    $my_val['sql_where'] = ['external_cause' => '0'];
-                    break;
-            }
-        }
-        return $my_val;
-    }
-
     public function eventBeforeInsert($val_) {
         switch ($this->OrrACRUD->getTable()) {
             case 'imc_icd10_opd':
@@ -200,7 +167,8 @@ class IMC extends MY_Controller {
     public function eventAfterInsert($val_) {
         switch ($this->OrrACRUD->getTable()) {
             case 'imc_icd10_opd':
-                $this->_setOpdPrincipalWithChronic($val_->insertId);
+                $this->ImcModel->setOpdPrincipalWithChronic($val_->insertId,$this->acrud->getSignData());
+                //$this->_setOpdPrincipalWithChronic($val_->insertId);
                 break;
 
             default:
