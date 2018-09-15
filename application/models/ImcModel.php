@@ -23,7 +23,10 @@ class ImcModel extends CI_Model {
         parent::__construct();
         $this->load->database('theptarin');
     }
-
+    /**
+     * รายการข้อมูลแพทย์
+     * @return array 
+     */
     public function getDoctorList() {
         $query = $this->db->query('SELECT * FROM `doctor`');
         $list = [];
