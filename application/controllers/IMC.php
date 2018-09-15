@@ -18,7 +18,6 @@ class IMC extends MY_Controller {
     private $vn = NULL;
     private $visit_date = NULL;
     private $doctor_id = NULL;
-    private $chronic_diag = NULL;
     public $opd = NULL;
 
     public function __construct() {
@@ -72,8 +71,11 @@ class IMC extends MY_Controller {
         $crud = $this->acrud;
         $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->columns(['visit_date', 'description', 'signature_opd'])->setRead()
                 ->requiredFields(['description', 'principal_diag'])->addFields(['description', 'principal_diag', 'external_cause'])->setSubject('ข้อมูลวินิจฉัยโรค HN. ' . $patient_data['hn'] . " " . $patient_data['name']);
+         if ($crud->getState() === 'Initial') {
         $crud->setRelationNtoN('principal_diag', 'imc_icd10_opd_principal', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', $this->_getPrincipalWhereSQL($chronic_diag));
         $crud->setRelationNtoN('external_cause', 'imc_icd10_opd_external', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', ['external_cause' => '1']);
+        //$crud->fieldType('signature_opd', 'dropdown_search', $this->ImcModel->getDoctorList());
+        }
         /**
          * Default value add form
          */
@@ -167,42 +169,13 @@ class IMC extends MY_Controller {
     public function eventAfterInsert($val_) {
         switch ($this->OrrACRUD->getTable()) {
             case 'imc_icd10_opd':
-                $this->ImcModel->setOpdPrincipalWithChronic($val_->insertId,$this->acrud->getSignData());
-                //$this->_setOpdPrincipalWithChronic($val_->insertId);
+                $this->ImcModel->setOpdPrincipalWithChronic($val_->insertId, $this->acrud->getSignData());
                 break;
 
             default:
                 break;
         }
         return parent::eventAfterInsert($val_);
-    }
-
-    private function _setOpdPrincipalWithChronic($id) {
-        $this->load->database('theptarin');
-        $sql = "SELECT `principal_id`AS `icd10_code_id` , `hn`AS `icd10_hn` FROM `imc_opd_principal_with_chronic`WHERE `id`= ?";
-        $query = $this->db->query($sql, [$id]);
-        if ($query->num_rows() > 0 && $this->_isIcd10Hn()) {
-            foreach ($query->result_array() as $row) {
-                //Error Duplicate entry
-                $this->db->insert('imc_icd10_hn_chronic', $row);
-            }
-        }
-    }
-
-    private function _isIcd10Hn() {
-        $status = FALSE;
-        $this->load->database('theptarin');
-        $sql = "SELECT * FROM `imc_icd10_hn` WHERE `hn`= ?";
-        $query = $this->db->query($sql, [$this->hn]);
-        $row = $query->row();
-        if (isset($row)) {
-            $status = TRUE;
-        } else {
-            $sign_ = $this->acrud->getSignData();
-            $status = $this->db->insert('imc_icd10_hn', ['hn' => $this->hn, 'sec_owner' => $sign_['user'], 'sec_user' => $sign_['user'],
-                'sec_time' => date("Y-m-d H:i:s"), 'sec_ip' => $sign_['ip_address'], 'sec_script' => $sign_['script']]);
-        }
-        return $status;
     }
 
 }

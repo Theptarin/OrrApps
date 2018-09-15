@@ -1,27 +1,43 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /**
  * ข้อมูลสารสนเทศเวชสถิติ
- * - โรคประจำตัวผู้ป่วย
- *
+ * @package OrrApps
  * @author suchart bunhachirat
  */
 class ImcModel extends CI_Model {
 
-    private $Patient = NULL;
-    private $ChronicResult = NULL;
+    /**
+     * ข้อมูลผู้ป่วย
+     * @var array
+     */
+    private $Patient = [];
+
+    /**
+     * รายการโรคประจำตัว
+     * @var array 
+     */
+    private $ChronicResult = [];
 
     public function __construct() {
         parent::__construct();
         $this->load->database('theptarin');
     }
 
+    public function getDoctorList() {
+        $query = $this->db->query('SELECT * FROM `doctor`');
+        $list = [];
+        foreach ($query->result_array() as $row) {
+            $list[$row['doctor_id']] = $row['doctor_id'] . " : " . $row['doctor_name'];
+        }
+        return $list;
+    }
+
+    /**
+     * ข้อมูลผู้ป่วย
+     * @param integer $hn รหัสประจำตัวผู้ป่วย
+     * @return array [hn,name,sex,birthday]
+     */
     public function getPatientData($hn) {
         $my_val = ['hn' => $hn, 'name' => NULL, 'sex' => NULL, 'birthday' => NULL];
         $sql = "SELECT * FROM `patient`WHERE `hn` = ?";
@@ -45,6 +61,10 @@ class ImcModel extends CI_Model {
         return $this->Patient = $my_val;
     }
 
+    /**
+     * ข้อมูลโรคประจำตัว/เรื้อรัง
+     * @return array [hn,description,chronic_count,is_e10,is_e11]
+     */
     public function getChronicDiag() {
         $sql = "SELECT * FROM `icd10_hn_chronic_list` WHERE `hn`= ?";
         $query = $this->db->query($sql, [$this->Patient['hn']]);
@@ -64,24 +84,29 @@ class ImcModel extends CI_Model {
         return $my_val;
     }
 
-    public function setOpdPrincipalWithChronic($id,$sign_) {
-        $chronic_diag=$this->getChronicDiag();
+    /**
+     * บันทึกข้อมูลโรคประจำตัวผู้ป่วยเมื่อบันทึกรหัสวินิจฉัยโรคผู้ป่วยนอก
+     * @param int $id รหัสรายการที่เพิ่มล่าสุด
+     * @param array $sign_ ข้อมูลการใช้งานระบบ
+     */
+    public function setOpdPrincipalWithChronic($id, $sign_) {
         $sql = "SELECT `principal_id`AS `icd10_code_id` , `hn`AS `icd10_hn` FROM `imc_opd_principal_with_chronic`WHERE `id`= ?";
         $query = $this->db->query($sql, [$id]);
         if ($query->num_rows() > 0 && $this->_isIcd10Hn($sign_)) {
             foreach ($query->result_array() as $row) {
-                /**
-                 * error ไม่เคยมีรหัสโรคประจำตัวมาก่อน
-                 */
-                if (array_key_exists($row['icd10_code_id'], $this->ChronicResult)) {
+                if (!array_key_exists($row['icd10_code_id'], $this->ChronicResult)) {
                     $this->db->insert('imc_icd10_hn_chronic', $row);
                 }
             }
         }
     }
 
-    public function _isIcd10Hn($sign_) {
-        $is = FALSE;
+    /**
+     * ตรวจสอบข้อมูลโรคประจำตัวผู้ป่วย
+     * @param type $sign_
+     * @return boolean คืนค่าจริงเมื่อการตรวจสอบไม่พบความผิดปกติ
+     */
+    private function _isIcd10Hn($sign_) {
         $sql = "SELECT * FROM `imc_icd10_hn` WHERE `hn`= ?";
         $query = $this->db->query($sql, [$this->Patient['hn']]);
         $row = $query->row();
@@ -90,6 +115,9 @@ class ImcModel extends CI_Model {
         } else {
             $is = $this->db->insert('imc_icd10_hn', ['hn' => $this->Patient['hn'], 'sec_owner' => $sign_['user'], 'sec_user' => $sign_['user'],
                 'sec_time' => date("Y-m-d H:i:s"), 'sec_ip' => $sign_['ip_address'], 'sec_script' => $sign_['script']]);
+        }
+        if (!$is) {
+            die('รายการข้อมูลโรคประจำตัวผู้ป่วยไม่ถูกต้อง กรุณาแจ้งผู้ดูแล');
         }
         return $is;
     }
