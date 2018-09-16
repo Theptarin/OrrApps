@@ -18,7 +18,6 @@ class IMC extends MY_Controller {
     private $vn = NULL;
     private $visit_date = NULL;
     private $doctor_id = NULL;
-    public $opd = NULL;
 
     public function __construct() {
         parent::__construct();
