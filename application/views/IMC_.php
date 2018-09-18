@@ -37,7 +37,8 @@
             <a href='<?php echo site_url('IMC/icd10_hn') ?>'>การให้รหัสวินิจฉัยโรคประจำตัวผู้ป่วย</a> |
             <a href='<?php echo site_url('IMC/icd10_opd') ?>'>การให้รหัสวินิจฉัยโรคของผู้ป่วยนอก</a> |
             <a href='<?php echo site_url('IMC/icd10_ipd') ?>'>การให้รหัสวินิจฉัยโรคของผู้ป่วยใน</a>  |
-            <a href='<?php echo site_url('IMC/icd10_code') ?>'>การกำหนดรหัสวินิจฉัยโรค</a>
+            <a href='<?php echo site_url('IMC/icd10_code') ?>'>การตั้งรหัสวินิจฉัยโรค</a> |
+            <a href='<?php echo site_url('IMC/icd10_group') ?>'>การตั้งกลุ่มวินิจฉัยโรค</a>
 
         </div>
         <!-- End of header-->

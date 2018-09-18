@@ -177,7 +177,7 @@ class MY_Controller extends CI_Controller {
                 $this->eventRemoveMultipleState();
                 break;
             default :
-                $this->setMyJsonMessageFailure("State = $state");
+                //$this->setMyJsonMessageFailure("State = $state");
         }
         return NULL;
     }

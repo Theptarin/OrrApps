@@ -30,7 +30,17 @@ class IMC extends MY_Controller {
 
     public function icd10_code() {
         $crud = $this->acrud;
-        $crud->setTable('imc_icd10_code')->fieldType('chronic', 'checkbox_boolean')->fieldType('external_cause', 'checkbox_boolean');
+        $crud->setTable('imc_icd10_code')->fieldType('chronic', 'checkbox_boolean')->fieldType('external_cause', 'checkbox_boolean')
+                ->setRelation('icd10_group_code', 'imc_icd10_group', 'name');
+        $output = $crud->render();
+        $this->setMyView($output);
+    }
+
+    public function icd10_group() {
+        $crud = $this->acrud;
+        $crud->setTable('imc_icd10_group');
+        $fields = $this->getAllFields();
+        $crud->columns($fields)->fields($fields);
         $output = $crud->render();
         $this->setMyView($output);
     }
