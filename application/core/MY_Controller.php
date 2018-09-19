@@ -25,7 +25,7 @@ class MY_Controller extends CI_Controller {
      */
     public function index() {
         $ci_uri = new CI_URI();
-        $this->setMyView((object) array('output' => '', 'js_files' => array(base_url('assets/grocery-crud/js/jquery/jquery.js')), 'css_files' => array(base_url('assets/grocery-crud/css/bootstrap/bootstrap.css'))), $ci_uri->segment(1) . '_');
+        $this->setMyView((object) ['output' => '', 'js_files' => [base_url('assets/grocery-crud/js/jquery/jquery.js')], 'css_files' => [base_url('assets/bootstrap-3/css/bootstrap.css')]], $ci_uri->segment(1) . '_');
     }
 
     protected function getDbData($group) {

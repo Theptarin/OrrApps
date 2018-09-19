@@ -40,7 +40,7 @@ class Welcome extends CI_Controller {
     }
 
     private function set_view($view_name = "Welcome_") {
-        $html_tag_value = ['page_value' => $this->page_value, 'js_files' => array(base_url('assets/grocery-crud/js/jquery/jquery.js'),base_url('assets/grocery-crud/js/libraries/jquery-ui.js')), 'css_files' => array(base_url('assets/grocery-crud/css/bootstrap/bootstrap.css'),base_url('assets/grocery-crud/css/jquery-ui/jquery-ui.css'))];
+        $html_tag_value = ['page_value' => $this->page_value, 'js_files' => [base_url('assets/grocery-crud/js/jquery/jquery.js'),base_url('assets/grocery-crud/js/libraries/jquery-ui.js'),base_url('assets/bootstrap-3/js/bootstrap.min.js')], 'css_files' => [base_url('assets/bootstrap-3/css/bootstrap.css'),base_url('assets/grocery-crud/css/jquery-ui/jquery-ui.css')]];
         $this->load->view($view_name, (array) $html_tag_value);
     }
 

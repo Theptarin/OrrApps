@@ -9,12 +9,12 @@ Orr projects Home
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
         <title><?php echo $page_value['title']; ?></title>
-<?php foreach ($css_files as $file): ?>
+        <?php foreach ($css_files as $file): ?>
             <link type="text/css" rel="stylesheet" href="<?php echo $file; ?>" />
-<?php endforeach; ?>
-<?php foreach ($js_files as $file): ?>
+        <?php endforeach; ?>
+        <?php foreach ($js_files as $file): ?>
             <script src="<?php echo $file; ?>"></script>
-<?php endforeach; ?>
+        <?php endforeach; ?>
     </head>
     <body>
         <nav class="navbar navbar-inverse">
@@ -31,6 +31,15 @@ Orr projects Home
                 </ul>
             </div>
         </nav> 
+        <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Dropdown Example
+                <span class="caret"></span></button>
+            <ul class="dropdown-menu">
+                <li><a href="#">HTML</a></li>
+                <li><a href="#">CSS</a></li>
+                <li><a href="#">JavaScript</a></li>
+            </ul>
+        </div>
         <?php
         // put your code here
         ?>

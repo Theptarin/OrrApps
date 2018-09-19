@@ -6,12 +6,12 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
         <title><?php echo "TEST"; ?></title>
-<?php foreach ($css_files as $file): ?>
-        <link type="text/css" rel="stylesheet" href="<?php echo $file; ?>" />
-<?php endforeach; ?>
-<?php foreach ($js_files as $file): ?>
-        <script src="<?php echo $file; ?>"></script>
-<?php endforeach; ?>
+        <?php foreach ($css_files as $file): ?>
+            <link type="text/css" rel="stylesheet" href="<?php echo $file; ?>" />
+        <?php endforeach; ?>
+        <?php foreach ($js_files as $file): ?>
+            <script src="<?php echo $file; ?>"></script>
+        <?php endforeach; ?>
     </head>
     <body>
         <!-- Beginning header -->
@@ -23,7 +23,7 @@
             <a href='<?php echo site_url('Project/my_activity') ?>'>กิจกรรรมของโครงการ</a>
         </div>
         <!-- End of header-->
-        <div style='height:20px;'></div> 
+        <div style='height:5px;'></div> 
         <div>
             <?php echo $output; ?>
         </div>
