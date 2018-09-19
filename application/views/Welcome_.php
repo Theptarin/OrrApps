@@ -17,6 +17,7 @@ Orr projects Home
         <?php endforeach; ?>
     </head>
     <body>
+
         <nav class="navbar navbar-inverse">
             <div class="container-fluid">
                 <div class="navbar-header">
@@ -24,22 +25,23 @@ Orr projects Home
                 </div>
                 <ul class="nav navbar-nav">
                     <li ><?php echo anchor(site_url('IMC'), 'สารสนเทศเวชสถิติ', ['title' => '']) ?></li>
+                    <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Page 1 <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">Page 1-1</a></li>
+                            <li><a href="#">Page 1-2</a></li>
+                            <li><a href="#">Page 1-3</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#">Page 2</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <li ><?php echo $page_value['mnu_setting'] ?></li>
                     <li ><?php echo $page_value['mnu_sign'] ?></li>
+                    <li><a href="#"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
+                    <li><a href="#"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
                 </ul>
             </div>
-        </nav> 
-        <div class="dropdown">
-            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">Dropdown Example
-                <span class="caret"></span></button>
-            <ul class="dropdown-menu">
-                <li><a href="#">HTML</a></li>
-                <li><a href="#">CSS</a></li>
-                <li><a href="#">JavaScript</a></li>
-            </ul>
-        </div>
+        </nav>
         <?php
         // put your code here
         ?>
