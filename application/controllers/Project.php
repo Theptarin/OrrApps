@@ -28,7 +28,7 @@ class Project extends MY_Controller {
 
     public function my_sys() {
         $crud = $this->acrud;
-        $crud->setTable('my_sys')->setSubject('MySys', 'ข้อมูลโปรแกรม');
+        $crud->setTable('my_sys');
         $fields = $this->getAllFields();
         $crud->columns($fields)->fields($fields);
         $crud->fieldType('any_use', 'dropdown', $this->use_set)->fieldType('aut_user', 'dropdown', $this->aut_set)->

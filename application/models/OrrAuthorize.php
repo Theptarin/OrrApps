@@ -33,8 +33,8 @@ class OrrAuthorize extends CI_Model {
     }
 
     /**
-     * คืนค่าสถานะการลงชื่อใช้งาน
-     * @return Array
+     * คืนค่าสถานะการใช้งาน
+     * @return Array ['id' = เลขผู้ใช้งาน, 'user' = รหัสผู้ใช้งาน, 'ip_address' = เลขไอพี , 'script' => รหัสโปรแกรม, 'project' = ชื่อโปรแกรม, 'project_title' = ชื่อเรียกโปรแกรม , 'project_description' = คำอธิบาย, 'key' = รหัสใช้งาน, 'status' = สถานะ]
      */
     public function getSignData() {
         if ($this->session->has_userdata('sign_data')) {
@@ -181,7 +181,10 @@ class OrrAuthorize extends CI_Model {
             $this->sign_data['project_description'] = $query->row()->description;
         }
     }
-
+    /**
+     * กำหนดค่า from title และ from description
+     * @param string $script
+     */
     protected function setForm($script) {
         $sql = "SELECT * FROM  `my_sys`  WHERE  sys_id = ? ";
         $query = $this->db_auth->query($sql, array($script));

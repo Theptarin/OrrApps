@@ -11,9 +11,10 @@ require_once(APPPATH . 'libraries/OrrACRUD.php');
  */
 class MY_Controller extends CI_Controller {
 
-    protected $OrrACRUD = null;
-    protected $SignData = null;
-    protected $MyFooter = "MyFooter";
+    protected $OrrACRUD = NULL;
+    protected $Sign_ = [];
+    protected $View_ = [];
+    protected $Orr_ = ['title' => "Orr Projects"];
 
     public function __construct() {
         parent::__construct();
@@ -24,8 +25,9 @@ class MY_Controller extends CI_Controller {
      * Default View of project
      */
     public function index() {
-        $ci_uri = new CI_URI();
-        $this->setMyView((object) ['output' => '', 'js_files' => [base_url('assets/grocery-crud/js/jquery/jquery.js')], 'css_files' => [base_url('assets/bootstrap-3/css/bootstrap.css')]], $ci_uri->segment(1) . '_');
+        //$ci_uri = new CI_URI();
+        $this->setMyView((object) ['output' => '', 'js_files' => [], 'css_files' => []]);
+        //$this->setMyView((object) ['output' => '']);
     }
 
     protected function getDbData($group) {
@@ -44,9 +46,8 @@ class MY_Controller extends CI_Controller {
     }
 
     protected function setACRUD(OrrACRUD $acrud) {
-        $sign_ = $acrud->getSignData();
-        if ($sign_['status'] === 'Online') {
-            $this->SignData = $sign_;
+        $this->Sign_ = $acrud->getSignData();
+        if ($this->Sign_['status'] === 'Online') {
             $this->eventState($acrud->getState());
             $this->getACRUD($acrud);
             return $this;
@@ -63,6 +64,8 @@ class MY_Controller extends CI_Controller {
     }
 
     protected function getACRUD(OrrACRUD $acrud) {
+        $acrud->unsetBootstrap()->unsetJquery()->unsetJqueryUi();
+        $acrud->setSubject('รายการใหม่', $this->Sign_['form_title']);
         $acrud->callbackBeforeInsert(array($this, 'eventBeforeInsert'))
                 ->callbackAfterInsert(array($this, 'eventAfterInsert'))
                 ->callbackBeforeUpdate(array($this, 'eventBeforeUpdate'))
@@ -76,16 +79,7 @@ class MY_Controller extends CI_Controller {
         return $this->OrrACRUD->getAllFields();
     }
 
-    protected function setMyFooter($footer) {
-        $this->MyFooter = $footer;
-    }
-
-    protected function getMyFooter() {
-        return$this->MyFooter;
-    }
-
-    protected function setMyView($output = null, $view = "Project_") {
-        $output->footer = $this->getMyFooter();
+    protected function setMyView($output) {
         if (isset($output->isJSONResponse) && $output->isJSONResponse) {
             header('Content-Type: application/json; charset=utf-8');
             echo $output->output;
@@ -93,15 +87,16 @@ class MY_Controller extends CI_Controller {
         }
 
         if (is_object($this->OrrACRUD)) {
-            $sign_ = $this->OrrACRUD->getSignData();
-            $view = $sign_['project'];
+            $output->view_ = $this->Sign_;
+            $output->orr_ = $this->Orr_;
+            $output->view_['css_files'] = [base_url('assets/jquery-ui/jquery-ui.min.css'), base_url('assets/bootstrap-3/css/bootstrap.min.css')];
+            $output->view_['js_files'] = [base_url('assets/jquery-3.min.js'), base_url('assets/jquery-ui/jquery-ui.min.js'), base_url('assets/bootstrap-3/js/bootstrap.min.js')];
+            $this->load->view($output->view_['project'], $output);
         }
-
-        $this->load->view($view, $output);
     }
 
     public function eventBeforeInsert($val_) {
-        $sign_ = $this->OrrACRUD->getSignData();
+        $sign_ = $this->Sign_;
         $val_->data['sec_owner'] = $sign_['user'];
         $val_->data['sec_user'] = $sign_['user'];
         $val_->data['sec_time'] = date("Y-m-d H:i:s");
@@ -116,7 +111,7 @@ class MY_Controller extends CI_Controller {
     }
 
     public function eventBeforeUpdate($val_) {
-        $sign_ = $this->OrrACRUD->getSignData();
+        $sign_ = $this->Sign_;
         $val_->data['sec_user'] = $sign_['user'];
         $val_->data['sec_time'] = date("Y-m-d H:i:s");
         $val_->data['sec_ip'] = $sign_['ip_address'];
@@ -126,6 +121,7 @@ class MY_Controller extends CI_Controller {
 
     public function eventAfterUpdate($val_) {
         $this->addActivityPostLog(print_r($val_, TRUE), 'AfterUpdate');
+
         return $val_;
     }
 
@@ -177,7 +173,7 @@ class MY_Controller extends CI_Controller {
                 $this->eventRemoveMultipleState();
                 break;
             default :
-                //$this->setMyJsonMessageFailure("State = $state");
+            //$this->setMyJsonMessageFailure("State = $state");
         }
         return NULL;
     }
