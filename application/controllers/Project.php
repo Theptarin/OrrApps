@@ -26,7 +26,7 @@ class Project extends MY_Controller {
         $this->setACRUD($this->acrud);
     }
 
-    public function my_sys() {
+    public function mySys() {
         $crud = $this->acrud;
         $crud->setTable('my_sys');
         $fields = $this->getAllFields();
@@ -50,9 +50,9 @@ class Project extends MY_Controller {
         $this->setMyView($output);
     }
 
-    public function my_user() {
+    public function myUser() {
         $crud = $this->acrud;
-        $crud->setTable('my_user')->setSubject('MyUser', 'ข้อมูลผู้ใช้งาน')->setRead();
+        $crud->setTable('my_user')->setRead();
         $crud->columns($this->getAllFields());
         $crud->fieldType('status', 'dropdown', $this->status_set)->fieldType('password', 'password');
         /**
@@ -66,14 +66,14 @@ class Project extends MY_Controller {
         $this->setMyView($output);
     }
 
-    public function my_datafield() {
+    public function myDatafield() {
         $crud = $this->acrud;
-        $crud->setTable('my_datafield')->setSubject('MyDatafield', 'คำจำกัดความข้อมูล');
+        $crud->setTable('my_datafield');
         $output = $crud->render();
         $this->setMyView($output);
     }
 
-    public function my_activity() {
+    public function myActivity() {
         $crud = $this->acrud;
         /**
          * Error on view read

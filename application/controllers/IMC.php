@@ -28,7 +28,7 @@ class IMC extends MY_Controller {
         $this->load->model('ImcModel');
     }
 
-    public function icd10_code() {
+    public function icd10Code() {
         $crud = $this->acrud;
         $crud->setTable('imc_icd10_code')->fieldType('chronic', 'checkbox_boolean')->fieldType('external_cause', 'checkbox_boolean')
                 ->setRelation('icd10_group_code', 'imc_icd10_group', 'name');
@@ -36,7 +36,7 @@ class IMC extends MY_Controller {
         $this->setMyView($output);
     }
 
-    public function icd10_group() {
+    public function icd10Group() {
         $crud = $this->acrud;
         $crud->setTable('imc_icd10_group');
         $fields = $this->getAllFields();
@@ -45,7 +45,7 @@ class IMC extends MY_Controller {
         $this->setMyView($output);
     }
 
-    public function icd10_hn() {
+    public function icd10Hn() {
         $crud = $this->acrud;
         $fields = ['hn', 'chronic_diag'];
         $crud->setTable('imc_icd10_hn')->fields($fields)->columns($fields);
@@ -54,7 +54,7 @@ class IMC extends MY_Controller {
         $this->setMyView($output);
     }
 
-    public function icd10_opd() {
+    public function icd10Opd() {
         $crud = $this->acrud;
         $crud->setTable('imc_icd10_opd')->unsetAdd()->setRead();
         $crud->setRelationNtoN('opd_principal_diag', 'imc_icd10_opd_principal', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}');
@@ -71,17 +71,16 @@ class IMC extends MY_Controller {
     /**
      * หน้าจอข้อมูลงานบริการผู้ป่วยนอก
      */
-    public function opd_visit() {
+    public function opdVisit() {
         $crud = $this->acrud;
         $crud->setTable('imc_opd_visit')->setPrimaryKey('hn', 'imc_opd_visit');
         $fields = $this->getAllFields();
         $crud->columns($fields)->fields($fields)->unsetOperations();
         $crud->setActionButton('ICD10', 'fa fa-user', function ($row) {
             if ($row->icd10_opd_id == "") {
-                return 'icd10_opd_add/' . $row->visit_date . '/' . $row->vn . '/' . $row->hn . '/' . $row->doctor_id . '#/add';
+                return 'icd10OpdAdd/' . $row->visit_date . '/' . $row->vn . '/' . $row->hn . '/' . $row->doctor_id . '#/add';
             } else {
-                //return 'icd10_opd_edit/' . $row->hn . '#/edit/' . $row->icd10_opd_id;
-                return 'icd10_opd_edit/' . $row->hn . '#/';
+                return 'icd10OpdEdit/' . $row->hn . '#/';
             }
         }, true);
         if ($crud->getState() === 'Initial') {
@@ -101,7 +100,7 @@ class IMC extends MY_Controller {
      * @param type $hn
      * @param type $doctor_id
      */
-    public function icd10_opd_add($dd = "", $mm = "", $yyyy = "", $vn = "", $hn = "", $doctor_id = "") {
+    public function icd10OpdAdd($dd = "", $mm = "", $yyyy = "", $vn = "", $hn = "", $doctor_id = "") {
         $this->load->model('ImcModel');
         $this->hn = $hn;
         $this->visit_date = $yyyy . "-" . $mm . "-" . $dd;
@@ -127,7 +126,7 @@ class IMC extends MY_Controller {
         $this->setMyView($output);
     }
 
-    public function icd10_opd_edit($hn) {
+    public function icd10OpdEdit($hn) {
         /**
          * ตรวจสอบข้อมูลโรคเรื้อรังเมื่อมีการแก้ไข
          * $patient_data = $this->ImcModel->getPatientData($hn);
@@ -155,7 +154,7 @@ class IMC extends MY_Controller {
         return $my_val;
     }
 
-    public function icd10_ipd() {
+    public function icd10Ipd() {
         $crud = $this->acrud;
         $crud->setTable('imc_icd10_ipd');
         $crud->columns(['discharge_date', 'an', 'hn']);

@@ -29,14 +29,15 @@
                 <ul class="nav navbar-nav">
                     <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">...<span class="caret"></span></a>
                         <ul class="dropdown-menu">
-                            <li><a href="<?php echo $menu_['projects_url']; ?>">ตั้งค่าระบบงาน</a></li>
-                            <li><a href="<?php echo(site_url('IMC')) ?>">สารสนเทศเวชสถิติ</a></li>
+<?php foreach ($menu_['my_sys'] as $key=>$value): ?>
+                            <li><a href="<?php echo site_url($key) ; ?>"><?php echo $value ; ?></a></li>
+<?php endforeach; ?>
                         </ul>
                     </li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
-                    <li><a href="<?php echo $menu_['projects_url']; ?>"><span class="glyphicon glyphicon-user"></span> <?php echo $menu_['mark_user']; ?> </a></li>
-                    <li><a href="<?php echo $menu_['mark_url']; ?>"><span class="glyphicon glyphicon-log-in"></span> <?php echo $menu_['mark_function']; ?> </a></li>
+                    <li><a href="<?php echo $menu_['projects_url']; ?>"><span class="<?php echo $menu_['mark_user_icon']; ?>"></span> <?php echo $menu_['mark_user']; ?> </a></li>
+                    <li><a href="<?php echo $menu_['mark_url']; ?>"><span class="<?php echo $menu_['mark_function_icon']; ?>"></span> <?php echo $menu_['mark_function']; ?> </a></li>
                 </ul>
             </div>
         </nav>
