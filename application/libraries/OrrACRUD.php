@@ -18,32 +18,22 @@ class OrrACRUD extends GroceryCrud {
     protected $authModel = NULL;
     protected $OrrModel = NULL;
     protected $defaultAs = [];
-    protected $signData = [];
     protected $secFields = ['sec_owner', 'sec_user', 'sec_time', 'sec_ip', 'sec_script', 'val_pass'];
     protected $language = 'Thai';
 
-    public function __construct($database = null, $conn_group) {
-
+    public function __construct($group, $db = null) {
         $ci = &get_instance();
         $ci->load->model('OrrAuthorize');
-        $ci->load->model('OrrModel');
         $this->authModel = new OrrAuthorize();
+        $ci->load->model('OrrModel');
         $this->OrrModel = new OrrModel();
-        $this->signData = $this->getSignData();
-        if ($this->signData['status'] === 'Online') {
-            if ($this->authModel->getSysExist()) {
-                //Configulation CRUD
-                $config = include(APPPATH . 'config/gcrud-enterprise.php');
-                parent::__construct($config, $database);
-                $this->OrrModel->setDb($conn_group);
-                $this->unsetFields($this->secFields)->unsetColumns($this->secFields)
-                        ->setLanguage($this->language)->setLabelAs(['sec_owner', 'sec_user', 'sec_time', 'sec_ip', 'sec_script']);
-            } else {
-                /**
-                 * @todo นำไปหน้าที่ตั้งค่าโปรแกรม
-                 */
-                die('ไม่พบโปรแกรม ' . $this->signData['script']);
-            }
+        if ($this->authModel->isCanUse()) {
+            //Configulation CRUD
+            $config = include(APPPATH . 'config/gcrud-enterprise.php');
+            parent::__construct($config, $db);
+            $this->OrrModel->setDb($group);
+            $this->unsetFields($this->secFields)->unsetColumns($this->secFields)
+                    ->setLanguage($this->language)->setLabelAs(['sec_owner', 'sec_user', 'sec_time', 'sec_ip', 'sec_script']);
         }
     }
 
@@ -92,10 +82,9 @@ class OrrACRUD extends GroceryCrud {
     public function getSysChild() {
         return $this->authModel->getSysChild();
     }
-    
+
     public function getSysParent() {
         return $this->authModel->getSysParent();
     }
-
 
 }

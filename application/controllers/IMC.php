@@ -23,7 +23,7 @@ class IMC extends MY_Controller {
         parent::__construct();
         $group = "theptarin";
         $db = $this->getDbData($group);
-        $this->acrud = new OrrACRUD($db, $group);
+        $this->acrud = new OrrACRUD($group, $db);
         $this->setACRUD($this->acrud);
         $this->load->model('ImcModel');
     }

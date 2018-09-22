@@ -3,6 +3,10 @@
 /**
  * Orr-projects Authorize Class
  * คลาสการตรวจสอบสิทธิ์การเข้าถึงข้อมูลจากข้อมูลผู้ใช้งาน และสภาวะการเข้าใช้ระบบ
+ * 1. ตรวจสอบสถานะออนไลน์ [ออนไลน์ [บันทึกออก] | ออฟไลน์ [บันทึกเข้า]]
+ * 2. ตรวจสอบการเรียกใช้โปรแกรม [ได้ | ไม่ได้]
+ * 3. ตรวจสอบสิทธิ์การใช้ข้อมูล[อ่าน | เขียน | ลบ]
+ * 4. เก็บข้อมูลตรวจสอบการเข้าใช้งาน
  * @package Orr-projects
  * @author Suchart Bunhachirat <suchartbu@gmail.com>
  * @version 2561
@@ -13,17 +17,19 @@ class OrrAuthorize extends CI_Model {
      * List of all sign data
      * @var array 
      */
-    protected $signData = ['id' => 0, 'user' => NULL, 'ip_address' => NULL, 'script' => NULL, 'project' => NULL, 'project_title' => NULL, 'project_description' => NULL, 'key' => NULL, 'status' => NULL];
+    protected $signData = [];
 
     /**
      * Authorize db object
      */
     protected $dbAuth = NULL;
-    protected $sysList = [];
 
     /**
-     * Constructor
+     * List of System
+     * @var array
      */
+    protected $sysList = [];
+
     public function __construct() {
         parent::__construct();
         $this->load->library('session');
@@ -34,14 +40,38 @@ class OrrAuthorize extends CI_Model {
     }
 
     /**
-     * คืนค่าสถานะการใช้งาน
+     * คืนค่า จริง เมื่อบันทึกเข้าออนไลน์ และ เรียกใช้โปรแกรมที่ลงทะเบียน
+     * @return boolean
+     */
+    public function isCanUse() {
+        return ($this->isUserOnLine() && $this->isSystemRegiter()) ? TRUE : FALSE;
+    }
+
+    /**
+     * คืนค่า จริง ถ้าสถานะเข้าใช้ออนไลน์
+     * @return boolean
+     */
+    public function isUserOnLine() {
+        return ($this->session->has_userdata('sign_data')) ? $this->isSignOk() : FALSE;
+    }
+
+    /**
+     * คืนค่า จริง ถ้าสถานะการเรียกใช้โปรแกรมถูกต้อง
+     * @return boolean
+     */
+    public function isSystemRegiter() {
+        $sql = "SELECT *  FROM `my_sys` WHERE `sys_id` = ?";
+        $query = $this->dbAuth->query($sql, [$this->signData['script']]);
+        return ($query->num_rows() === 1) ? TRUE : FALSE;
+    }
+
+    /**
+     * คืนค่า รายการ ข้อมูลการใช้งานปัจจุบัน
      * @return Array ['id' = เลขผู้ใช้งาน, 'user' = รหัสผู้ใช้งาน, 'ip_address' = เลขไอพี , 'script' => รหัสโปรแกรม, 'project' = ชื่อโปรแกรม, 'project_title' = ชื่อเรียกโปรแกรม , 'project_description' = คำอธิบาย, 'key' = รหัสใช้งาน, 'status' = สถานะ]
      */
     public function getSignData() {
-        if ($this->session->has_userdata('sign_data')) {
-            $this->setSign();
-        }
-        return $this->signData;
+        $getSingData = ($this->session->has_userdata('sign_data'))?$this->isSignOk():FALSE;
+        return ($getSingData)?$this->signData:['id' => 0, 'user' => NULL, 'ip_address' => NULL, 'script' => NULL, 'project' => NULL, 'project_title' => NULL, 'project_description' => NULL, 'key' => NULL, 'status' => NULL];
     }
 
     private function setSysList() {
@@ -53,8 +83,8 @@ class OrrAuthorize extends CI_Model {
             if ($id[1] === "") {
                 $parent[$id[0]] = $row->title;
             } else {
-                $parent_id = $id[0] ."_";
-                $child[$parent_id]=array_key_exists($parent_id, $child)?array_merge($child[$parent_id],[$id[1] => $row->title]):[$id[1] => $row->title];
+                $parent_id = $id[0] . "_";
+                $child[$parent_id] = array_key_exists($parent_id, $child) ? array_merge($child[$parent_id], [$id[1] => $row->title]) : [$id[1] => $row->title];
             }
         }
         $this->sysList['parent'] = $parent;
@@ -120,38 +150,25 @@ class OrrAuthorize extends CI_Model {
     }
 
     /**
-     * ตรวจสอบสถานะการลงชื่อเข้าใช้ระบบ
+     * ปรับปรุงข้อมูลการบันทึกเข้าใช้
+     * คืนค่า จริง เมื่อข้อมูลถูกต้อง
+     * @return boolean
      */
-    private function setSign() {
+    private function isSignOk() {
+        $isSignOk = FALSE;
         $this->signData = json_decode($this->session->userdata('sign_data'), TRUE);
         $sql = "SELECT * FROM  `my_user`  WHERE  id = ? AND`status` = 0 ";
         $query = $this->dbAuth->query($sql, array($this->signData['id']));
-        if ($query->num_rows() === 1) {
-            if ($this->signData['key'] === $this->getSignKey($query->row()->sec_time)) {
-                $this->signData['status'] = $this->getSignStatus(TRUE);
-                $this->signData['ip_address'] = $this->getSignIpAddress();
-                $this->signData['script'] = $this->getSignScript();
-            } else {
-                $this->signData['status'] = $this->getSignStatus(FALSE);
-            }
-        } else {
+        if ($query->num_rows() === 1 && $this->signData['key'] === $this->getSignKey($query->row()->sec_time)) {
+            $this->signData['status'] = $this->getSignStatus(TRUE);
+            $this->signData['ip_address'] = $this->getSignIpAddress();
+            $this->signData['script'] = $this->getSignScript();
+            $isSignOk = TRUE;
+        }else{
             $this->signOut();
             die('Sign Data record is abnormal.');
         }
-    }
-
-    /**
-     * คืนค่าเป็นจริง ถ้ามีลงชื่อเข้าระบบแล้ว
-     * @return boolean
-     */
-    public function getSign() {
-        if ($this->session->has_userdata('sign_data')) {
-            $this->setSign();
-            $val = TRUE;
-        } else {
-            $val = FALSE;
-        }
-        return $val;
+        return$isSignOk;
     }
 
     /**

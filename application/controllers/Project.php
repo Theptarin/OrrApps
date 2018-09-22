@@ -22,7 +22,7 @@ class Project extends MY_Controller {
         parent::__construct();
         $group = "orr_projects";
         $db = $this->getDbData($group);
-        $this->acrud = new OrrACRUD($db, $group);
+        $this->acrud = new OrrACRUD($group, $db);
         $this->setACRUD($this->acrud);
     }
 
@@ -83,6 +83,10 @@ class Project extends MY_Controller {
         $this->setMyView($output);
     }
 
+    public function mySQL() {
+        redirect("http://127.0.0.1/phpmyadmin/");
+    }
+
     public function eventBeforeInsert($val_) {
         switch ($this->OrrACRUD->getTable()) {
             case 'my_user':
@@ -118,7 +122,7 @@ class Project extends MY_Controller {
         if ($this->charge_password) {
             $sign_url = $this->OrrACRUD->getSignUrl();
             $sign_ = $this->OrrACRUD->getSignData();
-            $message ="รหัสผ่านใหม่ของ " . $sign_['user'] ." แล้ว ";
+            $message = "รหัสผ่านใหม่ของ " . $sign_['user'] . " แล้ว ";
             $message .= "<a href=\"$sign_url\">กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่</a>";
             $this->setMyJsonMessageFailure($message);
         }

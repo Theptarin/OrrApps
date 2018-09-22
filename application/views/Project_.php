@@ -28,7 +28,7 @@
                 </div>
                 <ul class="nav navbar-nav">
                     <li class="active"><?php echo anchor(site_url(str_replace("_", "/", $view_['project'])), $view_['project_title'], ['title' => $view_['project_description']]) ?></li>
-                    <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">...<span class="caret"></span></a>
+                    <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-th-list"></span></a>
                         <ul class="dropdown-menu">
 <?php foreach ($menu_['my_sys'] as $key=>$value): ?>
                             <li><a href="<?php echo site_url(str_replace("_", "/", $view_['project'].$key)) ; ?>"><?php echo $value ; ?></a></li>
