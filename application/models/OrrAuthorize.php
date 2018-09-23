@@ -44,7 +44,7 @@ class OrrAuthorize extends CI_Model {
      * @return boolean
      */
     public function isCanUse() {
-        return ($this->isUserOnLine() && $this->isSystemRegiter()) ? TRUE : FALSE;
+        return ($this->isUserOnLine() && $this->isSystemOk()) ? TRUE : FALSE;
     }
 
     /**
@@ -59,10 +59,14 @@ class OrrAuthorize extends CI_Model {
      * คืนค่า จริง ถ้าสถานะการเรียกใช้โปรแกรมถูกต้อง
      * @return boolean
      */
-    public function isSystemRegiter() {
+    public function isSystemOk() {
         $sql = "SELECT *  FROM `my_sys` WHERE `sys_id` = ?";
         $query = $this->dbAuth->query($sql, [$this->signData['script']]);
-        return ($query->num_rows() === 1) ? TRUE : FALSE;
+        $row_ = ($query->num_rows() === 1) ? $query->row_array() : die("ไม่มีโปรแกรมในทะเบียน");
+        /**
+         * เพิ่มการตรวจสอบรายการผุ้ใช้งานได้
+         */
+        return ($row_['any_use'])?TRUE:die("ไม่มีสิทธิ์เรียกใช้งาน");
     }
 
     /**
@@ -70,8 +74,8 @@ class OrrAuthorize extends CI_Model {
      * @return Array ['id' = เลขผู้ใช้งาน, 'user' = รหัสผู้ใช้งาน, 'ip_address' = เลขไอพี , 'script' => รหัสโปรแกรม, 'project' = ชื่อโปรแกรม, 'project_title' = ชื่อเรียกโปรแกรม , 'project_description' = คำอธิบาย, 'key' = รหัสใช้งาน, 'status' = สถานะ]
      */
     public function getSignData() {
-        $getSingData = ($this->session->has_userdata('sign_data'))?$this->isSignOk():FALSE;
-        return ($getSingData)?$this->signData:['id' => 0, 'user' => NULL, 'ip_address' => NULL, 'script' => NULL, 'project' => NULL, 'project_title' => NULL, 'project_description' => NULL, 'key' => NULL, 'status' => NULL];
+        $getSingData = ($this->session->has_userdata('sign_data')) ? $this->isSignOk() : FALSE;
+        return ($getSingData) ? $this->signData : ['id' => 0, 'user' => NULL, 'ip_address' => NULL, 'script' => NULL, 'project' => NULL, 'project_title' => NULL, 'project_description' => NULL, 'key' => NULL, 'status' => NULL];
     }
 
     private function setSysList() {
@@ -144,8 +148,7 @@ class OrrAuthorize extends CI_Model {
         } else {
             $this->signData['user'] = '_ERR';
             $txt = 'User ' . $user . ' is error.';
-            $this->addActivity($txt);
-            $this->signOut();
+            $this->addActivity($txt)->signOut();
         }
     }
 
@@ -164,7 +167,7 @@ class OrrAuthorize extends CI_Model {
             $this->signData['ip_address'] = $this->getSignIpAddress();
             $this->signData['script'] = $this->getSignScript();
             $isSignOk = TRUE;
-        }else{
+        } else {
             $this->signOut();
             die('Sign Data record is abnormal.');
         }

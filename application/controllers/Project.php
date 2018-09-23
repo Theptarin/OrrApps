@@ -31,7 +31,7 @@ class Project extends MY_Controller {
         $crud->setTable('my_sys');
         $fields = $this->getAllFields();
         $crud->columns($fields)->fields($fields);
-        $crud->fieldType('any_use', 'dropdown', $this->use_set)->fieldType('aut_user', 'dropdown', $this->aut_set)->
+        $crud->fieldType('any_use', 'checkbox_boolean')->fieldType('aut_user', 'dropdown', $this->aut_set)->
                 fieldType('aut_group', 'dropdown', $this->aut_set)->fieldType('aut_any', 'dropdown', $this->aut_set)->
                 fieldType('aut_god', 'dropdown', $this->use_set);
         //$crud->setRelation('aut_can_from', 'my_sys', '{title} {sys_id}');
@@ -39,7 +39,7 @@ class Project extends MY_Controller {
          * Default value add form
          */
         $crud->callbackAddForm(function ($data) {
-            $data['any_use'] = 1;
+            $data['any_use'] = TRUE;
             $data['aut_user'] = 3;
             $data['aut_group'] = 2;
             $data['aut_any'] = 1;
