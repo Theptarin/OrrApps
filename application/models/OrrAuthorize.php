@@ -17,18 +17,19 @@ class OrrAuthorize extends CI_Model {
      * List of all sign data
      * @var array 
      */
-    protected $signData = [];
+    private $signData = [];
 
     /**
      * Authorize db object
      */
-    protected $dbAuth = NULL;
+    private $dbAuth = NULL;
 
     /**
      * List of System
      * @var array
      */
-    protected $sysList = [];
+    private $sysList = [];
+    private $sysAut = [];
 
     public function __construct() {
         parent::__construct();
@@ -62,11 +63,19 @@ class OrrAuthorize extends CI_Model {
     public function isSystemOk() {
         $sql = "SELECT *  FROM `my_sys` WHERE `sys_id` = ?";
         $query = $this->dbAuth->query($sql, [$this->signData['script']]);
-        $row_ = ($query->num_rows() === 1) ? $query->row_array() : die("ไม่มีโปรแกรมในทะเบียน");
+        $this->sysAut = ($query->num_rows() === 1) ? $query->row_array() : die("ไม่มีโปรแกรมในทะเบียน");
         /**
-         * เพิ่มการตรวจสอบรายการผุ้ใช้งานได้
+         * ($row_['any_use']) ? TRUE : ($this->isAutUse('sec_owner')) ? TRUE : die('ไม่มีสิทธิเรียกใช้โปรแกรม');
          */
-        return ($row_['any_use'])?TRUE:die("ไม่มีสิทธิ์เรียกใช้งาน");
+        return ($this->sysAut['any_use']) ? TRUE : ($this->signData['user'] === $this->sysAut['sec_owner']) ? TRUE : die('ไม่มีสิทธิเรียกใช้โปรแกรม');
+    }
+    
+    /**
+     * คืนค่ากำหนดสิทธิ์ และข้อมูลที่เกี่ยวข้อง
+     * @return array my_sys current record.
+     */
+    public function getSysAut() {
+        return $this->sysAut;
     }
 
     /**
@@ -103,17 +112,6 @@ class OrrAuthorize extends CI_Model {
     public function getSysChild() {
         $this->setSysList();
         return $this->sysList['child'];
-    }
-
-    public function getSysExist() {
-        $sql = "SELECT *  FROM `my_sys` WHERE `sys_id` = ?";
-        $query = $this->dbAuth->query($sql, array($this->signData['script']));
-        if ($query->num_rows() === 1) {
-            $var = TRUE;
-        } else {
-            $var = FALSE;
-        }
-        return $var;
     }
 
     /**
