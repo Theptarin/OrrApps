@@ -69,7 +69,7 @@ class OrrAuthorize extends CI_Model {
          */
         return ($this->sysAut['any_use']) ? TRUE : ($this->signData['user'] === $this->sysAut['sec_owner']) ? TRUE : die('ไม่มีสิทธิเรียกใช้โปรแกรม');
     }
-    
+
     /**
      * คืนค่ากำหนดสิทธิ์ และข้อมูลที่เกี่ยวข้อง
      * @return array my_sys current record.
@@ -90,7 +90,7 @@ class OrrAuthorize extends CI_Model {
     private function setSysList() {
         $parent = [];
         $child = [];
-        $query = $this->dbAuth->query("SELECT * FROM `my_sys`");
+        $query = $this->dbAuth->query("SELECT * FROM `my_sys` WHERE `mnu_order` > 0 ORDER BY `mnu_order`,`sys_id`");
         foreach ($query->result() as $row) {
             $id = explode("_", $row->sys_id);
             if ($id[1] === "") {
@@ -146,7 +146,7 @@ class OrrAuthorize extends CI_Model {
         } else {
             $this->signData['user'] = '_ERR';
             $txt = 'User ' . $user . ' is error.';
-            $this->addActivity($txt)->signOut();
+            $this->addActivity($txt);
         }
     }
 

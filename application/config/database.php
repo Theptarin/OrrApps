@@ -120,8 +120,30 @@ $db['orr_projects'] = array(
 
 $db['theptarin'] = array(
     'dsn' => '',
-    'hostname' => '10.1.99.17',
-    'username' => 'orr_projects',
+    'hostname' => '10.1.99.19',
+    'username' => 'theptarin',
+    'password' => 'orr-projects',
+    'database' => 'theptarin',
+    'dbdriver' => 'mysqli',
+    'dbprefix' => '',
+    'pconnect' => FALSE,
+    'db_debug' => (ENVIRONMENT !== 'production'),
+    'cache_on' => FALSE,
+    'cachedir' => '',
+    'char_set' => 'utf8',
+    'dbcollat' => 'utf8_general_ci',
+    'swap_pre' => '',
+    'encrypt' => FALSE,
+    'compress' => FALSE,
+    'stricton' => FALSE,
+    'failover' => array(),
+    'save_queries' => TRUE
+);
+
+$db['ttr_hims'] = array(
+    'dsn' => '',
+    'hostname' => '10.1.99.19',
+    'username' => 'theptarin',
     'password' => 'orr-projects',
     'database' => 'theptarin',
     'dbdriver' => 'mysqli',

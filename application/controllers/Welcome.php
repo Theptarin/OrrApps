@@ -27,7 +27,7 @@ class Welcome extends CI_Controller {
             $menu_ = ['projects_url' => site_url('Project'), 'mark_url' => site_url('Mark'), 'mark_user' => "", 'mark_user_icon' => "glyphicon glyphicon-info-sign", 'mark_function' => "Sign In", 'mark_function_icon' => "glyphicon glyphicon-log-in"];
         }
         $menu_['my_sys'] = $this->OrrAuthorize->getSysParent();
-        asort($menu_['my_sys']);
+        //asort($menu_['my_sys']);
         $this->setMyView((object) ['output' => '', 'js_files' => [], 'css_files' => [], 'view_' => $sign_, 'orr_' => $orr_, 'menu_' => $menu_]);
     }
 
