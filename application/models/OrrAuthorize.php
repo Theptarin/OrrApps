@@ -57,21 +57,29 @@ class OrrAuthorize extends CI_Model {
     }
 
     /**
-     * คืนค่า จริง ถ้าสถานะการเรียกใช้โปรแกรมถูกต้อง
-     * @return boolean
+     * เป็นโปรแกรมมีทะเบียน
+     * @return boolean ค่าจริงเมื่อข้อมูลทะเบียนโปรแกรมถูกต้อง
      */
     public function isSystemOk() {
         $sql = "SELECT *  FROM `my_sys` WHERE `sys_id` = ?";
         $query = $this->dbAuth->query($sql, [$this->signData['script']]);
         $this->sysAut = ($query->num_rows() === 1) ? $query->row_array() : die("ไม่มีโปรแกรมในทะเบียน");
-        /**
-         * ($row_['any_use']) ? TRUE : ($this->isAutUse('sec_owner')) ? TRUE : die('ไม่มีสิทธิเรียกใช้โปรแกรม');
-         */
-        return ($this->sysAut['any_use']) ? TRUE : ($this->signData['user'] === $this->sysAut['sec_owner']) ? TRUE : die('ไม่มีสิทธิเรียกใช้โปรแกรม');
+        return ($this->sysAut['any_use']) ? TRUE : ($this->signData['user'] === $this->sysAut['sec_owner']) ? TRUE : $this->isAutOK();
+    }
+
+   
+    /**
+     * เป็นผู้สามารถเรียกใช้งานโปรแกรมได้
+     * @return boolean ค่าจริงเมื่อสิทธิ์เรียกใช้งาน
+     */
+    public function isAutOK() {
+        $sql = "SELECT *  FROM `my_can` WHERE `sys_id` = ? AND user_id = ?";
+        $query = $this->dbAuth->query($sql, [$this->sysAut['sys_id'], $this->signData['id']]);
+        return ($query->num_rows() === 1) ? TRUE : die("ไม่มีสิทธิเรียกใช้โปรแกรม");
     }
 
     /**
-     * คืนค่ากำหนดสิทธิ์ และข้อมูลที่เกี่ยวข้อง
+     * คืนค่า ข้อมูลรายการกำหนดสิทธิ์
      * @return array my_sys current record.
      */
     public function getSysAut() {

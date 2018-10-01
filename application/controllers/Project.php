@@ -30,16 +30,19 @@ class Project extends MY_Controller {
         $crud = $this->acrud;
         $crud->setTable('my_sys');
         $fields = $this->getAllFields();
-        $crud->columns($fields)->fields($fields);
-        $crud->fieldType('any_use', 'checkbox_boolean')->fieldType('aut_user', 'dropdown', $this->aut_set)->
+        $my_fields =array_merge($fields,['use_list']);
+        
+        $crud->columns($fields)->fields($my_fields);
+        $crud->fieldType('any_use', 'dropdown', $this->use_set)->fieldType('aut_user', 'dropdown', $this->aut_set)->
                 fieldType('aut_group', 'dropdown', $this->aut_set)->fieldType('aut_any', 'dropdown', $this->aut_set)->
                 fieldType('aut_god', 'dropdown', $this->use_set);
+        $crud->setRelationNtoN('use_list', 'my_can','my_user', 'sys_id', 'user_id', '{user} {fname} {lname}', 'user', ['status' => '0']);
         //$crud->setRelation('aut_can_from', 'my_sys', '{title} {sys_id}');
         /**
          * Default value add form
          */
         $crud->callbackAddForm(function ($data) {
-            $data['any_use'] = TRUE;
+            $data['any_use'] = 1;
             $data['aut_user'] = 3;
             $data['aut_group'] = 2;
             $data['aut_any'] = 1;
