@@ -46,10 +46,11 @@ class MY_Controller extends CI_Controller {
     }
 
     protected function setACRUD(OrrACRUD $acrud) {
+        $this->OrrACRUD = $acrud;
         $this->Sign_ = $acrud->getSignData();
         if ($this->Sign_['status'] === 'Online') {
             $this->eventState($acrud->getState());
-            $this->getACRUD($acrud);
+            $this->initACRUD();
             return $this;
         } else {
             $sign_url = $acrud->getSignUrl();
@@ -63,16 +64,16 @@ class MY_Controller extends CI_Controller {
         }
     }
 
-    protected function getACRUD(OrrACRUD $acrud) {
-        $acrud->unsetBootstrap()->unsetJquery()->unsetJqueryUi();
-        $acrud->setSubject('รายการใหม่', $this->Sign_['form_title']);
-        $acrud->callbackBeforeInsert(array($this, 'eventBeforeInsert'))
+    protected function initACRUD() {
+        $this->OrrACRUD->unsetBootstrap()->unsetJquery()->unsetJqueryUi();
+        $this->OrrACRUD->setSubject('รายการใหม่', $this->Sign_['form_title']);
+        $this->OrrACRUD->callbackBeforeInsert(array($this, 'eventBeforeInsert'))
                 ->callbackAfterInsert(array($this, 'eventAfterInsert'))
                 ->callbackBeforeUpdate(array($this, 'eventBeforeUpdate'))
                 ->callbackAfterUpdate(array($this, 'eventAfterUpdate'))
                 ->callbackAfterDelete(array($this, 'eventAfterDelete'))
                 ->callbackAfterDeleteMultiple(array($this, 'eventAfterDeleteMultiple'));
-        return $this->OrrACRUD = $acrud;
+        return $this;
     }
 
     protected function getAllFields() {
@@ -147,6 +148,9 @@ class MY_Controller extends CI_Controller {
      * @return type
      */
     protected function eventState($state) {
+        /**
+         * Todo $this->OrrACRUD->getStateInfo()
+         */
         switch ($state) {
             case 'Main':
                 $this->eventMainState();
