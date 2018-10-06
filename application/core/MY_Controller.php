@@ -49,7 +49,6 @@ class MY_Controller extends CI_Controller {
         $this->OrrACRUD = $acrud;
         $this->Sign_ = $acrud->getSignData();
         if ($this->Sign_['status'] === 'Online') {
-            $this->eventState($acrud->getState());
             $this->initACRUD();
             return $this;
         } else {
@@ -81,6 +80,7 @@ class MY_Controller extends CI_Controller {
     }
 
     protected function setMyView($output) {
+        $this->eventState($this->OrrACRUD->getState());
         if (isset($output->isJSONResponse) && $output->isJSONResponse) {
             header('Content-Type: application/json; charset=utf-8');
             echo $output->output;
@@ -141,16 +141,11 @@ class MY_Controller extends CI_Controller {
         return $val_;
     }
 
-    /**
-     * Main -> Initial
-     * 
-     * @param type $state
-     * @return type
-     */
     protected function eventState($state) {
         /**
          * Todo $this->OrrACRUD->getStateInfo()
          */
+        $state_info = $this->OrrACRUD->getStateInfo();
         switch ($state) {
             case 'Main':
                 $this->eventMainState();
@@ -167,13 +162,18 @@ class MY_Controller extends CI_Controller {
                 $this->eventInsertState();
                 break;
             case 'EditForm';
+               /**
+                  foreach ($this->OrrACRUD->getStateInfo() as $key => $value) {
+                  echo "StateInfo *** " . $key . " => " . $value ."***\r\n";
+                  }
+                */
                 $this->eventEditFormState();
                 break;
             case 'Update';
                 $this->eventUpdateState();
                 break;
             case 'ReadForm';
-                $this->eventEditFormState();
+                $this->eventReadFormState();
                 break;
             case 'RemoveOne';
                 $this->eventRemoveOneState();

@@ -27,7 +27,7 @@ class OrrACRUD extends GroceryCrud {
         $this->authModel = new OrrAuthorize();
         $ci->load->model('OrrModel');
         $this->OrrModel = new OrrModel();
-        if ($this->authModel->isCanUse()) {
+        if ($this->authModel->isReady()) {
             //Configulation CRUD
             $config = include(APPPATH . 'config/gcrud-enterprise.php');
             parent::__construct($config, $db);
@@ -85,6 +85,10 @@ class OrrACRUD extends GroceryCrud {
 
     public function getSysParent() {
         return $this->authModel->getSysParent();
+    }
+    
+    public function setAnyUseDefault($sys_id){
+        $this->authModel->setAnyUseDefault($sys_id);
     }
 
 }

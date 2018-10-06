@@ -22,7 +22,7 @@ class OrrAuthorize extends CI_Model {
     /**
      * Authorize db object
      */
-    private $dbAuth = NULL;
+    private $db = NULL;
 
     /**
      * List of System
@@ -34,8 +34,7 @@ class OrrAuthorize extends CI_Model {
     public function __construct() {
         parent::__construct();
         $this->load->library('session');
-        $this->dbAuth = $this->load->database('orr_projects', TRUE);
-
+        $this->db = $this->load->database('orr_projects', TRUE);
         $this->signData['ip_address'] = $this->getSignIpAddress();
         $this->signData['script'] = 'authorize_orr';
     }
@@ -44,7 +43,7 @@ class OrrAuthorize extends CI_Model {
      * คืนค่า จริง เมื่อบันทึกเข้าออนไลน์ และ เรียกใช้โปรแกรมที่ลงทะเบียน
      * @return boolean
      */
-    public function isCanUse() {
+    public function isReady() {
         return ($this->isUserOnLine() && $this->isSystemOk()) ? TRUE : FALSE;
     }
 
@@ -62,20 +61,35 @@ class OrrAuthorize extends CI_Model {
      */
     public function isSystemOk() {
         $sql = "SELECT *  FROM `my_sys` WHERE `sys_id` = ?";
-        $query = $this->dbAuth->query($sql, [$this->signData['script']]);
+        $query = $this->db->query($sql, [$this->signData['script']]);
         $this->sysAut = ($query->num_rows() === 1) ? $query->row_array() : die("ไม่มีโปรแกรมในทะเบียน");
         return ($this->sysAut['any_use']) ? TRUE : ($this->signData['user'] === $this->sysAut['sec_owner']) ? TRUE : $this->isAutOK();
     }
 
-   
     /**
      * เป็นผู้สามารถเรียกใช้งานโปรแกรมได้
      * @return boolean ค่าจริงเมื่อสิทธิ์เรียกใช้งาน
      */
     public function isAutOK() {
         $sql = "SELECT *  FROM `my_can` WHERE `sys_id` = ? AND user_id = ?";
-        $query = $this->dbAuth->query($sql, [$this->sysAut['sys_id'], $this->signData['id']]);
+        $query = $this->db->query($sql, [$this->sysAut['sys_id'], $this->signData['id']]);
         return ($query->num_rows() === 1) ? TRUE : die("ไม่มีสิทธิเรียกใช้โปรแกรม");
+    }
+
+    /**
+     * ระหว่างการทดสอบ
+     * กลับคืนค่าเริ่มต้น ไม่ระบุผู้ใช้งานโปรแกรม
+     * @param string $sys_id
+     */
+    public function setAnyUseDefault($sys_id) {
+        if ($this->isReady()) {
+            $this->db->db_select('orr_projects');
+            $this->db->delete('my_can', ['sys_id' => $sys_id]);
+            $txt = "Reset Any Use Default : " . $sys_id;
+        } else {
+            $txt = "Error Any Use Default : " . $sys_id;
+        }
+        $this->addActivity($txt);
     }
 
     /**
@@ -98,7 +112,7 @@ class OrrAuthorize extends CI_Model {
     private function setSysList() {
         $parent = [];
         $child = [];
-        $query = $this->dbAuth->query("SELECT * FROM `my_sys` WHERE `mnu_order` > 0 ORDER BY `mnu_order`,`sys_id`");
+        $query = $this->db->query("SELECT * FROM `my_sys` WHERE `mnu_order` > 0 ORDER BY `mnu_order`,`sys_id`");
         foreach ($query->result() as $row) {
             $id = explode("_", $row->sys_id);
             if ($id[1] === "") {
@@ -135,7 +149,7 @@ class OrrAuthorize extends CI_Model {
          */
         $sql = "SELECT * FROM  `my_user`  WHERE  user = ? AND val_pass LIKE  ? AND`status` = 0 ";
         $pass = "%" . md5($pass) . "%";
-        $query = $this->dbAuth->query($sql, array($user, $pass));
+        $query = $this->db->query($sql, array($user, $pass));
         if ($query->num_rows() === 1) {
             /**
              * Create sing key with ip,user,sec_time
@@ -167,7 +181,7 @@ class OrrAuthorize extends CI_Model {
         $isSignOk = FALSE;
         $this->signData = json_decode($this->session->userdata('sign_data'), TRUE);
         $sql = "SELECT * FROM  `my_user`  WHERE  id = ? AND`status` = 0 ";
-        $query = $this->dbAuth->query($sql, array($this->signData['id']));
+        $query = $this->db->query($sql, array($this->signData['id']));
         if ($query->num_rows() === 1 && $this->signData['key'] === $this->getSignKey($query->row()->sec_time)) {
             $this->signData['status'] = $this->getSignStatus(TRUE);
             $this->signData['ip_address'] = $this->getSignIpAddress();
@@ -229,7 +243,7 @@ class OrrAuthorize extends CI_Model {
 
     protected function setProject($project) {
         $sql = "SELECT * FROM  `my_sys`  WHERE  sys_id = ? ";
-        $query = $this->dbAuth->query($sql, array($project));
+        $query = $this->db->query($sql, array($project));
         if ($query->num_rows() === 1) {
             $this->signData['project_title'] = $query->row()->title;
             $this->signData['project_description'] = $query->row()->description;
@@ -242,7 +256,7 @@ class OrrAuthorize extends CI_Model {
      */
     protected function setForm($script) {
         $sql = "SELECT * FROM  `my_sys`  WHERE  sys_id = ? ";
-        $query = $this->dbAuth->query($sql, array($script));
+        $query = $this->db->query($sql, array($script));
         if ($query->num_rows() === 1) {
             $this->signData['form_title'] = $query->row()->title;
             $this->signData['form_description'] = $query->row()->description;
@@ -251,7 +265,7 @@ class OrrAuthorize extends CI_Model {
 
     public function addActivity($txt) {
         $data = ['description' => $txt, 'sec_user' => $this->signData['user'], 'sec_time' => date("Y-m-d H:i:s"), 'sec_ip' => $this->signData['ip_address'], 'sec_script' => $this->signData['script']];
-        $this->dbAuth->insert('my_activity', $data);
+        $this->db->insert('my_activity', $data);
     }
 
     public function signOut() {
@@ -268,7 +282,7 @@ class OrrAuthorize extends CI_Model {
      */
     public function getFieldsLabel(array $fields) {
         $sql = "SELECT `field_id` , `name` , `description` FROM  `my_datafield`  WHERE `field_id` IN ?";
-        $query = $this->dbAuth->query($sql, array($fields));
+        $query = $this->db->query($sql, array($fields));
         return $query->result_array();
     }
 

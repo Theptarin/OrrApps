@@ -30,13 +30,13 @@ class Project extends MY_Controller {
         $crud = $this->acrud;
         $crud->setTable('my_sys');
         $fields = $this->getAllFields();
-        $my_fields =array_merge($fields,['use_list']);
-        
+        $my_fields = array_merge($fields, ['use_list']);
+
         $crud->columns($fields)->fields($my_fields);
         $crud->fieldType('any_use', 'dropdown', $this->use_set)->fieldType('aut_user', 'dropdown', $this->aut_set)->
                 fieldType('aut_group', 'dropdown', $this->aut_set)->fieldType('aut_any', 'dropdown', $this->aut_set)->
                 fieldType('aut_god', 'dropdown', $this->use_set);
-        $crud->setRelationNtoN('use_list', 'my_can','my_user', 'sys_id', 'user_id', '{user} {fname} {lname}', 'user', ['status' => '0']);
+        $crud->setRelationNtoN('use_list', 'my_can', 'my_user', 'sys_id', 'user_id', '{user} {fname} {lname}', 'user', ['status' => '0']);
         //$crud->setRelation('aut_can_from', 'my_sys', '{title} {sys_id}');
         /**
          * Default value add form
@@ -91,7 +91,7 @@ class Project extends MY_Controller {
     }
 
     public function eventBeforeInsert($val_) {
-        switch ($this->OrrACRUD->getTable()) {
+        switch ($this->acrud->getTable()) {
             case 'my_user':
                 if (!empty($val_->data['password'])) {
                     $val_->data['val_pass'] = md5($val_->data['password']);
@@ -106,7 +106,7 @@ class Project extends MY_Controller {
     }
 
     public function eventBeforeUpdate($val_) {
-        switch ($this->OrrACRUD->getTable()) {
+        switch ($this->acrud->getTable()) {
             case 'my_user':
                 if (!empty($val_->data['password'])) {
                     $val_->data['val_pass'] = md5($val_->data['password']);
@@ -114,21 +114,35 @@ class Project extends MY_Controller {
                 }
                 $val_->data['password'] = "";
                 break;
-
             default:
                 break;
         }
         return parent::eventBeforeUpdate($val_);
     }
 
+    /**
+     * รอแก้ไขต่อไป
+     * @param type $val_
+     * @return type
+     */
     public function eventAfterUpdate($val_) {
         if ($this->charge_password) {
-            $sign_url = $this->OrrACRUD->getSignUrl();
-            $sign_ = $this->OrrACRUD->getSignData();
-            $message = "รหัสผ่านใหม่ของ " . $sign_['user'] . " แล้ว ";
+            $sign_url = $this->acrud->getSignUrl();
+            $message = "บันทึกรหัสผ่านของ " . $val_->data['fname'] . " " . $val_->data['lname'] . " [ " . $val_->data['user'] . " ] แล้ว  ";
             $message .= "<a href=\"$sign_url\">กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่</a>";
             $this->setMyJsonMessageFailure($message);
+        } else {
+            switch ($this->acrud->getTable()) {
+                case 'my_sys':
+                    if ($val_->data['any_use'] == 1) {
+                        $this->acrud->setAnyUseDefault($val_->data['sys_id']);
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
+
         return parent::eventAfterUpdate($val_);
     }
 
