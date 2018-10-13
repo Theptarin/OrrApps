@@ -1,21 +1,26 @@
 <?php
 
 /**
- * Description of Project
- *
- * @author it
+ * OrrApps Setting
+ * Web Application framwork
+ * คลาสการตั้งค่า โปรแกรม ผู้ใช้งาน การใช้ข้อมูล
+ * 
+ * @package OrrApps
+ * @author suchart bunhachirat<suchartbu@gmail.com>
  */
 class Setting extends MY_Controller {
 
+    /**
+     * @var OrrACRUD 
+     */
     private $acrud = NULL;
 
     /**
-     * Project Page for this controller.
-     * @todo Home Page for Orr projects.
+     * Access status
+     * @var array
      */
-    private $use_set = ['0' => '0 ระบุ', '1' => '1 ไม่ระบุ'];
-    private $aut_set = ['0' => '0 ไม่ได้', '1' => '1 อ่านได้', '2' => '2 เขียนได้', '3' => '3 ลบได้'];
-    private $status_set = ['0' => '0 Active', '1' => '1 Inactive'];
+    private $access_set = ['0' => '0 ไม่ได้', '1' => '1 อ่านได้', '2' => '2 เขียนได้', '3' => '3 ลบได้'];
+    private $status_set = ['0' => '0 ใช้งาน', '1' => '1 ไม่ใช้'];
     private $charge_password = FALSE;
 
     public function __construct() {
@@ -26,6 +31,10 @@ class Setting extends MY_Controller {
         $this->setACRUD($this->acrud);
     }
 
+    /**
+     * ทะเบียนโปรแกรม
+     * @return void
+     */
     public function mySys() {
         $crud = $this->acrud;
         $crud->setTable('my_sys');
@@ -33,21 +42,12 @@ class Setting extends MY_Controller {
         $my_fields = array_merge($fields, ['use_list']);
 
         $crud->columns($fields)->fields($my_fields);
-        $crud->fieldType('any_use', 'dropdown', $this->use_set)->fieldType('aut_user', 'dropdown', $this->aut_set)->
-                fieldType('aut_group', 'dropdown', $this->aut_set)->fieldType('aut_any', 'dropdown', $this->aut_set)->
-                fieldType('aut_god', 'dropdown', $this->use_set);
+        $crud->fieldType('any_use', 'dropdown', $this->status_set)->fieldType('aut_user', 'dropdown', $this->access_set)->fieldType('mnu_order', 'int')->
+                fieldType('aut_group', 'dropdown', $this->access_set)->fieldType('aut_any', 'dropdown', $this->access_set)->fieldType('aut_god', 'dropdown', $this->status_set);
+        $crud->setTexteditor(['description']);
         $crud->setRelationNtoN('use_list', 'my_can', 'my_user', 'sys_id', 'user_id', '{user} {fname} {lname}', 'user', ['status' => '0']);
-        //$crud->setRelation('aut_can_from', 'my_sys', '{title} {sys_id}');
-        /**
-         * Default value add form
-         */
         $crud->callbackAddForm(function ($data) {
-            $data['any_use'] = 1;
-            $data['aut_user'] = 3;
-            $data['aut_group'] = 2;
-            $data['aut_any'] = 1;
-            $data['aut_god'] = 1;
-            return $data;
+            return array_merge($data, ['any_use' => 1, 'aut_user' => 1, 'aut_group' => 2, 'aut_any' => 1, 'aut_god' => 1]);
         });
         $output = $crud->render();
         $this->setMyView($output);
