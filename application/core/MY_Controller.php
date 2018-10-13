@@ -92,7 +92,7 @@ class MY_Controller extends CI_Controller {
             $output->orr_ = $this->Orr_;
             $sys_child = $this->OrrACRUD->getSysChild();
             //asort($sys_child[$this->Sign_['project']]);
-            $menu_ = ['my_sys' => $sys_child[$this->Sign_['project']], 'projects_url' => site_url('Project'), 'mark_url' => site_url('Mark/signout'), 'mark_user' => $this->Sign_['user'], 'mark_user_icon' => "glyphicon glyphicon-user", 'mark_function' => "Sign Out", 'mark_function_icon' => "glyphicon glyphicon-log-out"];
+            $menu_ = ['my_sys' => $sys_child[$this->Sign_['project']], 'projects_url' => site_url('Setting'), 'mark_url' => site_url('Mark/signout'), 'mark_user' => $this->Sign_['user'], 'mark_user_icon' => "glyphicon glyphicon-user", 'mark_function' => "Sign Out", 'mark_function_icon' => "glyphicon glyphicon-log-out"];
             //$output->menu_ = ['my_sys' => $sys_child[$this->Sign_['project']]];
             $output->menu_ = $menu_;
             $output->view_['css_files'] = [base_url('assets/jquery-ui/jquery-ui.min.css'), base_url('assets/bootstrap-3/css/bootstrap.min.css')];
