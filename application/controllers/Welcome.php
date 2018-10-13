@@ -22,9 +22,9 @@ class Welcome extends CI_Controller {
         $sign_ = $this->OrrAuthorize->getSignData();
         $orr_ = ['title' => "Orr Projects"];
         if ($sign_['status'] === 'Online') {
-            $menu_ = ['projects_url' => site_url('Project'), 'mark_url' => site_url('Mark/signout'), 'mark_user' => $sign_['user'], 'mark_user_icon' => "glyphicon glyphicon-user", 'mark_function' => "Sign Out", 'mark_function_icon' => "glyphicon glyphicon-log-out"];
+            $menu_ = ['projects_url' => site_url('Setting'), 'mark_url' => site_url('Mark/signout'), 'mark_user' => $sign_['user'], 'mark_user_icon' => "glyphicon glyphicon-user", 'mark_function' => "Sign Out", 'mark_function_icon' => "glyphicon glyphicon-log-out"];
         } else {
-            $menu_ = ['projects_url' => site_url('Project'), 'mark_url' => site_url('Mark'), 'mark_user' => "", 'mark_user_icon' => "glyphicon glyphicon-info-sign", 'mark_function' => "Sign In", 'mark_function_icon' => "glyphicon glyphicon-log-in"];
+            $menu_ = ['projects_url' => site_url('Setting'), 'mark_url' => site_url('Mark'), 'mark_user' => "", 'mark_user_icon' => "glyphicon glyphicon-info-sign", 'mark_function' => "Sign In", 'mark_function_icon' => "glyphicon glyphicon-log-in"];
         }
         $menu_['my_sys'] = $this->OrrAuthorize->getSysParent();
         //asort($menu_['my_sys']);

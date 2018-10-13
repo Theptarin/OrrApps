@@ -5,7 +5,7 @@
  *
  * @author it
  */
-class Project extends MY_Controller {
+class Setting extends MY_Controller {
 
     private $acrud = NULL;
 
