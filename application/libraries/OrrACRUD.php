@@ -17,7 +17,6 @@ class OrrACRUD extends GroceryCrud {
 
     protected $authModel = NULL;
     protected $OrrModel = NULL;
-    protected $defaultAs = [];
     protected $secFields = ['sec_owner', 'sec_user', 'sec_time', 'sec_ip', 'sec_script', 'val_pass'];
     protected $language = 'Thai';
 
@@ -47,26 +46,7 @@ class OrrACRUD extends GroceryCrud {
             $this->displayAs($field_['field_id'], $field_['name']);
         }
     }
-
-    /**
-     *
-     * Default value of the field.
-     * field type can use : string , readonly
-     * @param $field_name
-     * @param $default_as
-     * @return void
-     */
-    public function defaultAs($field_name, $default_as = null) {
-        if (is_array($field_name)) {
-            foreach ($field_name as $field => $default_as) {
-                $this->defaultAs[$field] = $default_as;
-            }
-        } elseif ($default_as !== null) {
-            $this->defaultAs[$field_name] = $default_as;
-        }
-        return $this;
-    }
-
+    
     public function AddActivity($txt_log) {
         $this->authModel->addActivity($txt_log);
     }
@@ -86,9 +66,28 @@ class OrrACRUD extends GroceryCrud {
     public function getSysParent() {
         return $this->authModel->getSysParent();
     }
+
+    public function setUserListEmpty($sys_id) {
+        $this->authModel->setUserListEmpty($sys_id);
+    }
+    /**
+     * คืนค่าโหมดการเข้าถึงข้อมูลรายการปัจจุบันของผู้ใช้งาน
+     * @param type $where
+     * @return int
+     */
+    public function getAutMod($where){
+        $sign_ = $this->getSignData();
+        $row_ = $this->OrrModel->getRowAut($this->getTable(), $where);
+        return 0;
+    }
     
-    public function setAnyUseDefault($sys_id){
-        $this->authModel->setAnyUseDefault($sys_id);
+    public function isCanEdit(){
+        //$row_ = $this->OrrModel->getRowAut($this->getTable(), $where);
+        return FALSE;
+    }
+    
+    public function isCanDel(){
+        return FALSE;
     }
 
 }

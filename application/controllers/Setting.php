@@ -10,25 +10,22 @@
  */
 class Setting extends MY_Controller {
 
-    /**
-     * @var OrrACRUD 
-     */
-    private $acrud = NULL;
+    private $Acrud;
 
     /**
      * Access status
      * @var array
      */
-    private $access_set = ['0' => '0 ไม่ได้', '1' => '1 อ่านได้', '2' => '2 เขียนได้', '3' => '3 ลบได้'];
-    private $status_set = ['0' => '0 ใช้งาน', '1' => '1 ไม่ใช้'];
-    private $charge_password = FALSE;
+    private $Access_ = ['0' => '0 ไม่ได้', '1' => '1 อ่านได้', '2' => '2 เขียนได้', '3' => '3 ลบได้'];
+    private $Status_ = ['0' => '0 ใช้งาน', '1' => '1 ไม่ใช้งาน'];
+    private $isChangePass = FALSE;
 
     public function __construct() {
         parent::__construct();
         $group = "orr_projects";
         $db = $this->getDbData($group);
-        $this->acrud = new OrrACRUD($group, $db);
-        $this->setACRUD($this->acrud);
+        $this->Acrud = new OrrACRUD($group, $db);
+        $this->setACRUD($this->Acrud);
     }
 
     /**
@@ -36,28 +33,28 @@ class Setting extends MY_Controller {
      * @return void
      */
     public function mySys() {
-        $crud = $this->acrud;
+        $crud = $this->Acrud;
         $crud->setTable('my_sys');
         $fields = $this->getAllFields();
-        $my_fields = array_merge($fields, ['use_list']);
+        $my_fields = array_merge($fields, ['user_list']);
 
         $crud->columns($fields)->fields($my_fields);
-        $crud->fieldType('any_use', 'dropdown', $this->status_set)->fieldType('aut_user', 'dropdown', $this->access_set)->fieldType('mnu_order', 'int')->
-                fieldType('aut_group', 'dropdown', $this->access_set)->fieldType('aut_any', 'dropdown', $this->access_set)->fieldType('aut_god', 'dropdown', $this->status_set);
+        $crud->fieldType('use_list', 'dropdown', $this->Status_)->fieldType('aut_user', 'dropdown', $this->Access_)->fieldType('mnu_order', 'int')->
+                fieldType('aut_group', 'dropdown', $this->Access_)->fieldType('aut_any', 'dropdown', $this->Access_)->fieldType('aut_god', 'dropdown', $this->Status_);
         $crud->setTexteditor(['description']);
-        $crud->setRelationNtoN('use_list', 'my_can', 'my_user', 'sys_id', 'user_id', '{user} {fname} {lname}', 'user', ['status' => '0']);
+        $crud->setRelationNtoN('user_list', 'my_can', 'my_user', 'sys_id', 'user_id', '{user} {fname} {lname}', 'user', ['status' => '0']);
         $crud->callbackAddForm(function ($data) {
-            return array_merge($data, ['any_use' => 1, 'aut_user' => 1, 'aut_group' => 2, 'aut_any' => 1, 'aut_god' => 1]);
+            return array_merge($data, ['use_list' => 1, 'aut_user' => 1, 'aut_group' => 2, 'aut_any' => 1, 'aut_god' => 1]);
         });
         $output = $crud->render();
         $this->setMyView($output);
     }
 
     public function myUser() {
-        $crud = $this->acrud;
+        $crud = $this->Acrud;
         $crud->setTable('my_user')->setRead();
         $crud->columns($this->getAllFields());
-        $crud->fieldType('status', 'dropdown', $this->status_set)->fieldType('password', 'password');
+        $crud->fieldType('status', 'dropdown', $this->Status_)->fieldType('password', 'password');
         /**
          * Default value add form
          */
@@ -70,14 +67,14 @@ class Setting extends MY_Controller {
     }
 
     public function myDatafield() {
-        $crud = $this->acrud;
+        $crud = $this->Acrud;
         $crud->setTable('my_datafield');
         $output = $crud->render();
         $this->setMyView($output);
     }
 
     public function myActivity() {
-        $crud = $this->acrud;
+        $crud = $this->Acrud;
         /**
          * Error on view read
          */
@@ -91,7 +88,7 @@ class Setting extends MY_Controller {
     }
 
     public function eventBeforeInsert($val_) {
-        switch ($this->acrud->getTable()) {
+        switch ($this->Acrud->getTable()) {
             case 'my_user':
                 if (!empty($val_->data['password'])) {
                     $val_->data['val_pass'] = md5($val_->data['password']);
@@ -106,11 +103,11 @@ class Setting extends MY_Controller {
     }
 
     public function eventBeforeUpdate($val_) {
-        switch ($this->acrud->getTable()) {
+        switch ($this->Acrud->getTable()) {
             case 'my_user':
                 if (!empty($val_->data['password'])) {
                     $val_->data['val_pass'] = md5($val_->data['password']);
-                    $this->charge_password = TRUE;
+                    $this->isChangePass = TRUE;
                 }
                 $val_->data['password'] = "";
                 break;
@@ -126,16 +123,16 @@ class Setting extends MY_Controller {
      * @return type
      */
     public function eventAfterUpdate($val_) {
-        if ($this->charge_password) {
-            $sign_url = $this->acrud->getSignUrl();
+        if ($this->isChangePass) {
+            $sign_url = $this->Acrud->getSignUrl();
             $message = "บันทึกรหัสผ่านของ " . $val_->data['fname'] . " " . $val_->data['lname'] . " [ " . $val_->data['user'] . " ] แล้ว  ";
             $message .= "<a href=\"$sign_url\">กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่</a>";
             $this->setMyJsonMessageFailure($message);
         } else {
-            switch ($this->acrud->getTable()) {
+            switch ($this->Acrud->getTable()) {
                 case 'my_sys':
-                    if ($val_->data['any_use'] == 1) {
-                        $this->acrud->setAnyUseDefault($val_->data['sys_id']);
+                    if ($val_->data['use_list'] == 1) {
+                        $this->Acrud->setUserListEmpty($val_->data['sys_id']);
                     }
                     break;
                 default:

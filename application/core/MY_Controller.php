@@ -11,9 +11,19 @@ require_once(APPPATH . 'libraries/OrrACRUD.php');
  */
 class MY_Controller extends CI_Controller {
 
-    protected $OrrACRUD = NULL;
+    /**
+     * @var Object OrrAcrud use private
+     */
+    private $DbAcrud = NULL;
+
+    /**
+     * @var Array รับค่า getSignData()
+     */
     protected $Sign_ = [];
-    protected $View_ = [];
+
+    /**
+     * @var array ข้อมูลเกี่ยวกับอ๋อแอป [title] 
+     */
     protected $Orr_ = ['title' => "Orr Projects"];
 
     public function __construct() {
@@ -21,13 +31,8 @@ class MY_Controller extends CI_Controller {
         $this->load->helper('url');
     }
 
-    /**
-     * Default View of project
-     */
     public function index() {
-        //$ci_uri = new CI_URI();
         $this->setMyView((object) ['output' => '', 'js_files' => [], 'css_files' => []]);
-        //$this->setMyView((object) ['output' => '']);
     }
 
     protected function getDbData($group) {
@@ -46,10 +51,11 @@ class MY_Controller extends CI_Controller {
     }
 
     protected function setACRUD(OrrACRUD $acrud) {
-        $this->OrrACRUD = $acrud;
+        $this->DbAcrud = $acrud;
         $this->Sign_ = $acrud->getSignData();
         if ($this->Sign_['status'] === 'Online') {
             $this->initACRUD();
+            $this->eventState($this->DbAcrud->getState());
             return $this;
         } else {
             $sign_url = $acrud->getSignUrl();
@@ -64,9 +70,9 @@ class MY_Controller extends CI_Controller {
     }
 
     protected function initACRUD() {
-        $this->OrrACRUD->unsetBootstrap()->unsetJquery()->unsetJqueryUi();
-        $this->OrrACRUD->setSubject('รายการใหม่', $this->Sign_['form_title']);
-        $this->OrrACRUD->callbackBeforeInsert(array($this, 'eventBeforeInsert'))
+        $this->DbAcrud->unsetBootstrap()->unsetJquery()->unsetJqueryUi();
+        $this->DbAcrud->setSubject('รายการใหม่', $this->Sign_['form_title']);
+        $this->DbAcrud->callbackBeforeInsert(array($this, 'eventBeforeInsert'))
                 ->callbackAfterInsert(array($this, 'eventAfterInsert'))
                 ->callbackBeforeUpdate(array($this, 'eventBeforeUpdate'))
                 ->callbackAfterUpdate(array($this, 'eventAfterUpdate'))
@@ -76,24 +82,25 @@ class MY_Controller extends CI_Controller {
     }
 
     protected function getAllFields() {
-        return $this->OrrACRUD->getAllFields();
+        return $this->DbAcrud->getAllFields();
     }
 
+    /**
+     * กำหนดข้อมูลการแสดงหน้าจอ
+     * @param array $output
+     */
     protected function setMyView($output) {
-        $this->eventState($this->OrrACRUD->getState());
         if (isset($output->isJSONResponse) && $output->isJSONResponse) {
             header('Content-Type: application/json; charset=utf-8');
             echo $output->output;
             exit;
         }
 
-        if (is_object($this->OrrACRUD)) {
+        if (is_object($this->DbAcrud)) {
             $output->view_ = $this->Sign_;
             $output->orr_ = $this->Orr_;
-            $sys_child = $this->OrrACRUD->getSysChild();
-            //asort($sys_child[$this->Sign_['project']]);
+            $sys_child = $this->DbAcrud->getSysChild();
             $menu_ = ['my_sys' => $sys_child[$this->Sign_['project']], 'projects_url' => site_url('Setting'), 'mark_url' => site_url('Mark/signout'), 'mark_user' => $this->Sign_['user'], 'mark_user_icon' => "glyphicon glyphicon-user", 'mark_function' => "Sign Out", 'mark_function_icon' => "glyphicon glyphicon-log-out"];
-            //$output->menu_ = ['my_sys' => $sys_child[$this->Sign_['project']]];
             $output->menu_ = $menu_;
             $output->view_['css_files'] = [base_url('assets/jquery-ui/jquery-ui.min.css'), base_url('assets/bootstrap-3/css/bootstrap.min.css')];
             $output->view_['js_files'] = [base_url('assets/jquery-3.min.js'), base_url('assets/jquery-ui/jquery-ui.min.js'), base_url('assets/bootstrap-3/js/bootstrap.min.js')];
@@ -102,12 +109,8 @@ class MY_Controller extends CI_Controller {
     }
 
     public function eventBeforeInsert($val_) {
-        $sign_ = $this->Sign_;
-        $val_->data['sec_owner'] = $sign_['user'];
-        $val_->data['sec_user'] = $sign_['user'];
-        $val_->data['sec_time'] = date("Y-m-d H:i:s");
-        $val_->data['sec_ip'] = $sign_['ip_address'];
-        $val_->data['sec_script'] = $sign_['script'];
+        $sign_data = ['sec_owner'=> $this->Sign_['user'],'sec_user'=> $this->Sign_['user'],'sec_time'=>date("Y-m-d H:i:s"),'sec_ip'=> $this->Sign_['ip_address'],'sec_script'=> $this->Sign_['script']];
+        $val_->data = array_merge($val_->data,$sign_data);
         return $val_;
     }
 
@@ -117,11 +120,8 @@ class MY_Controller extends CI_Controller {
     }
 
     public function eventBeforeUpdate($val_) {
-        $sign_ = $this->Sign_;
-        $val_->data['sec_user'] = $sign_['user'];
-        $val_->data['sec_time'] = date("Y-m-d H:i:s");
-        $val_->data['sec_ip'] = $sign_['ip_address'];
-        $val_->data['sec_script'] = $sign_['script'];
+        $sign_data = ['sec_user'=> $this->Sign_['user'],'sec_time'=>date("Y-m-d H:i:s"),'sec_ip'=> $this->Sign_['ip_address'],'sec_script'=> $this->Sign_['script']];
+        $val_->data = array_merge($val_->data,$sign_data);
         return $val_;
     }
 
@@ -142,10 +142,6 @@ class MY_Controller extends CI_Controller {
     }
 
     protected function eventState($state) {
-        /**
-         * Todo $this->OrrACRUD->getStateInfo()
-         */
-        $state_info = $this->OrrACRUD->getStateInfo();
         switch ($state) {
             case 'Main':
                 $this->eventMainState();
@@ -162,11 +158,12 @@ class MY_Controller extends CI_Controller {
                 $this->eventInsertState();
                 break;
             case 'EditForm';
-               /**
-                  foreach ($this->OrrACRUD->getStateInfo() as $key => $value) {
-                  echo "StateInfo *** " . $key . " => " . $value ."***\r\n";
-                  }
-                */
+                  print_r($this->DbAcrud->getStateInfo() );
+                  print_r($this->DbAcrud->getPrimaryKeys());
+                if(!$this->DbAcrud->isCanEdit()){
+                    $info_=$this->DbAcrud->getStateInfo();
+                    $this->setMyJsonMessageFailure("ไม่มีสิทธิ์แก้ไขข้อมูล");
+                }
                 $this->eventEditFormState();
                 break;
             case 'Update';
@@ -182,7 +179,7 @@ class MY_Controller extends CI_Controller {
                 $this->eventRemoveMultipleState();
                 break;
             default :
-            //$this->setMyJsonMessageFailure("State = $state");
+            $this->setMyJsonMessageFailure("State = $state");
         }
         return NULL;
     }
@@ -228,7 +225,7 @@ class MY_Controller extends CI_Controller {
     }
 
     protected function addActivityPostLog($EV_log, $EV_name) {
-        $this->OrrACRUD->AddActivity($EV_name . ' : ' . $EV_log);
+        $this->DbAcrud->AddActivity($EV_name . ' : ' . $EV_log);
     }
 
     protected function setMyJsonMessageFailure($message) {

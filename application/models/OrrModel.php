@@ -23,8 +23,22 @@ class OrrModel extends CI_Model {
         $this->db = $this->load->database($conn_group, TRUE);
     }
 
-    public function getAllFields($table_name) {
-        return $this->db->list_fields($table_name);
+    public function getAllFields($table) {
+        return $this->db->list_fields($table);
+    }
+    /**
+     * 
+     * @param string $table
+     * @param array $where
+     */
+    public function getRowAut($table,$where){
+        $query = $this->db->get_where($table, $where);
+        $row = $query->row_array();
+        return (isset($row))?$row:NULL;
+    }
+    
+    public function getPrimaryKayName(){
+        
     }
 
 }

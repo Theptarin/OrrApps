@@ -1,34 +1,35 @@
 <?php
 
 /**
- * Orr-projects Authorize Class
+ * OrrApps Authorize Class
  * คลาสการตรวจสอบสิทธิ์การเข้าถึงข้อมูลจากข้อมูลผู้ใช้งาน และสภาวะการเข้าใช้ระบบ
  * 1. ตรวจสอบสถานะออนไลน์ [ออนไลน์ [บันทึกออก] | ออฟไลน์ [บันทึกเข้า]]
  * 2. ตรวจสอบการเรียกใช้โปรแกรม [ได้ | ไม่ได้]
  * 3. ตรวจสอบสิทธิ์การใช้ข้อมูล[อ่าน | เขียน | ลบ]
  * 4. เก็บข้อมูลตรวจสอบการเข้าใช้งาน
- * @package Orr-projects
+ * @package OrrApps
  * @author Suchart Bunhachirat <suchartbu@gmail.com>
  * @version 2561
  */
 class OrrAuthorize extends CI_Model {
 
     /**
-     * List of all sign data
-     * @var array 
+     * @var array ข้อมูลการเข้าใช้งาน
      */
     private $signData = [];
 
     /**
-     * Authorize db object
+     * @var object Database Object
      */
     private $db = NULL;
 
     /**
-     * List of System
-     * @var array
+     * @var array รายการโปรแกรมที่ลงทะเบียนในระบบ
      */
     private $sysList = [];
+    /**
+     * @var array ข้อกำหนดสิทธิการใช้ข้อมูลตามโปรแกรม
+     */
     private $sysAut = [];
 
     public function __construct() {
@@ -56,18 +57,18 @@ class OrrAuthorize extends CI_Model {
     }
 
     /**
-     * เป็นโปรแกรมมีทะเบียน
+     * เป็นโปรแกรมที่ลงทะเบียนในระบบ
      * @return boolean ค่าจริงเมื่อข้อมูลทะเบียนโปรแกรมถูกต้อง
      */
     public function isSystemOk() {
         $sql = "SELECT *  FROM `my_sys` WHERE `sys_id` = ?";
         $query = $this->db->query($sql, [$this->signData['script']]);
         $this->sysAut = ($query->num_rows() === 1) ? $query->row_array() : die("ไม่มีโปรแกรมในทะเบียน");
-        return ($this->sysAut['any_use']) ? TRUE : ($this->signData['user'] === $this->sysAut['sec_owner']) ? TRUE : $this->isAutOK();
+        return ($this->sysAut['use_list']) ? TRUE : ($this->signData['user'] === $this->sysAut['sec_owner']) ? TRUE : $this->isAutOK();
     }
 
     /**
-     * เป็นผู้สามารถเรียกใช้งานโปรแกรมได้
+     * เป็นผู้สามารถเรียกใช้งานตามรายการผู้ใช้งานที่ระบุในทะเบียนโปรแกรม
      * @return boolean ค่าจริงเมื่อสิทธิ์เรียกใช้งาน
      */
     public function isAutOK() {
@@ -77,11 +78,10 @@ class OrrAuthorize extends CI_Model {
     }
 
     /**
-     * ระหว่างการทดสอบ
-     * กลับคืนค่าเริ่มต้น ไม่ระบุผู้ใช้งานโปรแกรม
+     * ลบรายการผู้ใช้งานที่ระบุในทะเบียนผู้ใช้งานที่ระบุ
      * @param string $sys_id
      */
-    public function setAnyUseDefault($sys_id) {
+    public function setUserListEmpty($sys_id) {
         if ($this->isReady()) {
             $this->db->db_select('orr_projects');
             $this->db->delete('my_can', ['sys_id' => $sys_id]);
@@ -93,8 +93,8 @@ class OrrAuthorize extends CI_Model {
     }
 
     /**
-     * คืนค่า ข้อมูลรายการกำหนดสิทธิ์
-     * @return array my_sys current record.
+     * คืนค่า สิทธิ์การใช้ข้อมูลตามประเภท
+     * @return array ['aut_user','aut_group','aut_any']
      */
     public function getSysAut() {
         return $this->sysAut;
@@ -276,7 +276,7 @@ class OrrAuthorize extends CI_Model {
     }
 
     /**
-     * 
+     * @todo รอทำ
      * @param Array Fields
      * @return Array
      */
