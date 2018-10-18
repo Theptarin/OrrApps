@@ -41,7 +41,6 @@ class Setting extends MY_Controller {
         $crud->columns($fields)->fields($my_fields);
         $crud->fieldType('use_list', 'dropdown', $this->Status_)->fieldType('aut_user', 'dropdown', $this->Access_)->fieldType('mnu_order', 'int')->
                 fieldType('aut_group', 'dropdown', $this->Access_)->fieldType('aut_any', 'dropdown', $this->Access_)->fieldType('aut_god', 'dropdown', $this->Status_);
-        $crud->setTexteditor(['description']);
         $crud->setRelationNtoN('user_list', 'my_can', 'my_user', 'sys_id', 'user_id', '{user} {fname} {lname}', 'user', ['status' => '0']);
         $crud->callbackAddForm(function ($data) {
             return array_merge($data, ['use_list' => 1, 'aut_user' => 1, 'aut_group' => 2, 'aut_any' => 1, 'aut_god' => 1]);

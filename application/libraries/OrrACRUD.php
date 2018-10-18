@@ -83,7 +83,7 @@ class OrrACRUD extends GroceryCrud {
     
     public function isCanEdit(){
         //$row_ = $this->OrrModel->getRowAut($this->getTable(), $where);
-        return FALSE;
+        return TRUE;
     }
     
     public function isCanDel(){

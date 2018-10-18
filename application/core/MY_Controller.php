@@ -99,8 +99,9 @@ class MY_Controller extends CI_Controller {
         if (is_object($this->DbAcrud)) {
             $output->view_ = $this->Sign_;
             $output->orr_ = $this->Orr_;
-            $sys_child = $this->DbAcrud->getSysChild();
-            $menu_ = ['my_sys' => $sys_child[$this->Sign_['project']], 'projects_url' => site_url('Setting'), 'mark_url' => site_url('Mark/signout'), 'mark_user' => $this->Sign_['user'], 'mark_user_icon' => "glyphicon glyphicon-user", 'mark_function' => "Sign Out", 'mark_function_icon' => "glyphicon glyphicon-log-out"];
+            $child = $this->DbAcrud->getSysChild();
+            $sys_child = (array_key_exists($this->Sign_['project'], $child))?$child[$this->Sign_['project']]:[''=>'---'];
+            $menu_ = ['my_sys' => $sys_child, 'projects_url' => site_url('Setting'), 'mark_url' => site_url('Mark/signout'), 'mark_user' => $this->Sign_['user'], 'mark_user_icon' => "glyphicon glyphicon-user", 'mark_function' => "Sign Out", 'mark_function_icon' => "glyphicon glyphicon-log-out"];
             $output->menu_ = $menu_;
             $output->view_['css_files'] = [base_url('assets/jquery-ui/jquery-ui.min.css'), base_url('assets/bootstrap-3/css/bootstrap.min.css')];
             $output->view_['js_files'] = [base_url('assets/jquery-3.min.js'), base_url('assets/jquery-ui/jquery-ui.min.js'), base_url('assets/bootstrap-3/js/bootstrap.min.js')];
@@ -158,8 +159,8 @@ class MY_Controller extends CI_Controller {
                 $this->eventInsertState();
                 break;
             case 'EditForm';
-                  print_r($this->DbAcrud->getStateInfo() );
-                  print_r($this->DbAcrud->getPrimaryKeys());
+                  //print_r($this->DbAcrud->getStateInfo() );
+                  //print_r($this->DbAcrud->getPrimaryKeys());
                 if(!$this->DbAcrud->isCanEdit()){
                     $info_=$this->DbAcrud->getStateInfo();
                     $this->setMyJsonMessageFailure("ไม่มีสิทธิ์แก้ไขข้อมูล");
