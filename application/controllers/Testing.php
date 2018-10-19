@@ -19,7 +19,7 @@ class Testing extends MY_Controller {
         $this->setACRUD($this->Acrud);
     }
     
-    public function checkRule(){
+    public function setRule(){
         
     }
     

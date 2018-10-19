@@ -4,7 +4,7 @@
  * OrrApps Setting
  * Web Application framwork
  * คลาสการตั้งค่า โปรแกรม ผู้ใช้งาน การใช้ข้อมูล
- * 
+ * @version 611019
  * @package OrrApps
  * @author suchart bunhachirat<suchartbu@gmail.com>
  */
@@ -30,6 +30,7 @@ class Setting extends MY_Controller {
 
     /**
      * ทะเบียนโปรแกรม
+     * 
      * @return void
      */
     public function mySys() {
@@ -37,10 +38,10 @@ class Setting extends MY_Controller {
         $crud->setTable('my_sys');
         $fields = $this->getAllFields();
         $my_fields = array_merge($fields, ['user_list']);
-
-        $crud->columns($fields)->fields($my_fields);
+        $crud->columns($fields)->fields($my_fields)->requiredFields(['sys_id', 'title', 'mnu_order']);
         $crud->fieldType('use_list', 'dropdown', $this->Status_)->fieldType('aut_user', 'dropdown', $this->Access_)->fieldType('mnu_order', 'int')->
                 fieldType('aut_group', 'dropdown', $this->Access_)->fieldType('aut_any', 'dropdown', $this->Access_)->fieldType('aut_god', 'dropdown', $this->Status_);
+        $crud->setRule('sys_id', 'regex', '/^[a-zA-Z0-9]{3,10} *_/')->setRule('mnu_order', 'integer');
         $crud->setRelationNtoN('user_list', 'my_can', 'my_user', 'sys_id', 'user_id', '{user} {fname} {lname}', 'user', ['status' => '0']);
         $crud->callbackAddForm(function ($data) {
             return array_merge($data, ['use_list' => 1, 'aut_user' => 1, 'aut_group' => 2, 'aut_any' => 1, 'aut_god' => 1]);
@@ -49,11 +50,17 @@ class Setting extends MY_Controller {
         $this->setMyView($output);
     }
 
+    /**
+     * ทะเบียนผู้ใช้งาน
+     * 
+     * @return void
+     */
     public function myUser() {
         $crud = $this->Acrud;
-        $crud->setTable('my_user')->setRead();
-        $crud->columns($this->getAllFields());
-        $crud->fieldType('status', 'dropdown', $this->Status_)->fieldType('password', 'password');
+        $crud->setTable('my_user')->unsetDelete()->unsetDeleteMultiple();
+        $crud->columns(['user', 'prefix', 'fname', 'lname', 'status'])->requiredFields(['prefix', 'fname', 'lname'])->readOnlyEditFields(['user']);
+        $crud->fieldType('status', 'dropdown', $this->Status_)->fieldType('password', 'password')->fieldType('confirm_password', 'password');
+        //$crud->setRelationNtoN('group_list', 'my_group', 'my_user', 'group_id', 'user_id', '{user} {fname} {lname}', 'user', ['status' => '0']);
         /**
          * Default value add form
          */
@@ -89,10 +96,13 @@ class Setting extends MY_Controller {
     public function eventBeforeInsert($val_) {
         switch ($this->Acrud->getTable()) {
             case 'my_user':
-                if (!empty($val_->data['password'])) {
+                if (!empty($val_->data['password']) && $val_->data['password'] === $val_->data['confirm_password'] && !empty($val_->data['user'])) {
                     $val_->data['val_pass'] = md5($val_->data['password']);
+                } else {
+                    $this->setMyJsonMessageFailure('รหัสผู้ใช้งาน หรือ รหัสผ่านไม่ถูกต้อง ');
                 }
                 $val_->data['password'] = "";
+                $val_->data['confirm_password'] = "";
                 break;
 
             default:
@@ -105,10 +115,15 @@ class Setting extends MY_Controller {
         switch ($this->Acrud->getTable()) {
             case 'my_user':
                 if (!empty($val_->data['password'])) {
-                    $val_->data['val_pass'] = md5($val_->data['password']);
-                    $this->isChangePass = TRUE;
+                    if ($val_->data['password'] === $val_->data['confirm_password']) {
+                        $val_->data['val_pass'] = md5($val_->data['password']);
+                        $this->isChangePass = TRUE;
+                    } else {
+                        $this->setMyJsonMessageFailure('ยืนยันรหัสผ่านไม่ถูกต้อง');
+                    }
                 }
                 $val_->data['password'] = "";
+                $val_->data['confirm_password'] = "";
                 break;
             default:
                 break;
@@ -124,7 +139,7 @@ class Setting extends MY_Controller {
     public function eventAfterUpdate($val_) {
         if ($this->isChangePass) {
             $sign_url = $this->Acrud->getSignUrl();
-            $message = "บันทึกรหัสผ่านของ " . $val_->data['fname'] . " " . $val_->data['lname'] . " [ " . $val_->data['user'] . " ] แล้ว  ";
+            $message = "บันทึกรหัสผ่านของ " . $val_->data['prefix'] . $val_->data['fname'] . " " . $val_->data['lname'] . "  แล้ว  ";
             $message .= "<a href=\"$sign_url\">กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่</a>";
             $this->setMyJsonMessageFailure($message);
         } else {
