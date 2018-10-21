@@ -26,19 +26,12 @@ class OrrModel extends CI_Model {
     public function getAllFields($table) {
         return $this->db->list_fields($table);
     }
-    /**
-     * 
-     * @param string $table
-     * @param array $where
-     */
-    public function getRowAut($table,$where){
-        $query = $this->db->get_where($table, $where);
-        $row = $query->row_array();
-        return (isset($row))?$row:NULL;
-    }
-    
-    public function getPrimaryKayName(){
-        
+
+    public function getSecOwner($table, $key_name = 'id') {
+        $this->db->select($key_name . ', sec_owner');
+        $query = $this->db->get($table);
+        //return "root";
+        return ($query->num_rows() === 1)?$query->row()->sec_owner:"";
     }
 
 }

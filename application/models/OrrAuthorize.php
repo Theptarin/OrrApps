@@ -27,8 +27,9 @@ class OrrAuthorize extends CI_Model {
      * @var array รายการโปรแกรมที่ลงทะเบียนในระบบ
      */
     private $sysList = [];
+
     /**
-     * @var array ข้อกำหนดสิทธิการใช้ข้อมูลตามโปรแกรม
+     * @var array ข้อกำหนดตามโปรแกรมตามทะเบียน
      */
     private $sysAut = [];
 
@@ -75,6 +76,14 @@ class OrrAuthorize extends CI_Model {
         $sql = "SELECT *  FROM `my_can` WHERE `sys_id` = ? AND user_id = ?";
         $query = $this->db->query($sql, [$this->sysAut['sys_id'], $this->signData['id']]);
         return ($query->num_rows() === 1) ? TRUE : die("ไม่มีสิทธิเรียกใช้โปรแกรม");
+    }
+
+    /**
+     * เป็นผู้ดูแลข้อมูลของโปรแกรม
+     * @return boolean ค่าจริงเมื่อกำหนดใช้สิทธิผู้ดูแลข้อมูล และ ผู้ใช้งานตรงกับเจ้าของโปรแกรม
+     */
+    public function isGod() {
+        return($this->sysAut['aut_god'] == 0 && $this->sysAut['sec_owner'] === $this->signData['user']) ? TRUE : FALSE;
     }
 
     /**

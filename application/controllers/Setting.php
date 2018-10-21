@@ -35,7 +35,7 @@ class Setting extends MY_Controller {
      */
     public function mySys() {
         $crud = $this->Acrud;
-        $crud->setTable('my_sys');
+        $crud->setTable('my_sys')->setClone();
         $fields = $this->getAllFields();
         $my_fields = array_merge($fields, ['user_list']);
         $crud->columns($fields)->fields($my_fields)->requiredFields(['sys_id', 'title', 'mnu_order']);
@@ -60,7 +60,10 @@ class Setting extends MY_Controller {
         $crud->setTable('my_user')->unsetDelete()->unsetDeleteMultiple();
         $crud->columns(['user', 'prefix', 'fname', 'lname', 'status'])->requiredFields(['prefix', 'fname', 'lname'])->readOnlyEditFields(['user']);
         $crud->fieldType('status', 'dropdown', $this->Status_)->fieldType('password', 'password')->fieldType('confirm_password', 'password');
-        //$crud->setRelationNtoN('group_list', 'my_group', 'my_user', 'group_id', 'user_id', '{user} {fname} {lname}', 'user', ['status' => '0']);
+        /**
+         * Bug ลบ User Group ทั้งหมดไม่ได้
+         */
+        $crud->setRelationNtoN('user_group', 'my_user_group', 'my_user', 'group_id', 'user_id', '{user} {fname} {lname}', 'user', ['status' => '0']);
         /**
          * Default value add form
          */

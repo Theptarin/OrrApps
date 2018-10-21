@@ -46,7 +46,7 @@ class OrrACRUD extends GroceryCrud {
             $this->displayAs($field_['field_id'], $field_['name']);
         }
     }
-    
+
     public function AddActivity($txt_log) {
         $this->authModel->addActivity($txt_log);
     }
@@ -70,23 +70,28 @@ class OrrACRUD extends GroceryCrud {
     public function setUserListEmpty($sys_id) {
         $this->authModel->setUserListEmpty($sys_id);
     }
+
     /**
-     * คืนค่าโหมดการเข้าถึงข้อมูลรายการปัจจุบันของผู้ใช้งาน
-     * @param type $where
-     * @return int
+     * คืนค่าจริง มีสิทธิแก้ไขรายการข้อมูล
+     * @return boolean ค่าจริงเมื่อกำหนดสิทธิ เจ้าของ > 1 กลุ่ม > 1 ผู้อื่น > 1 ['aut_user','aut_group','aut_any']
      */
-    public function getAutMod($where){
-        $sign_ = $this->getSignData();
-        $row_ = $this->OrrModel->getRowAut($this->getTable(), $where);
-        return 0;
+    public function isCanEdit() {
+        $mod_ = $this->authModel->getSysAut();
+        return ($mod_['aut_any'] > 1) ? TRUE : ($this->authModel->isGod()) ? TRUE : FALSE;
     }
-    
-    public function isCanEdit(){
-        //$row_ = $this->OrrModel->getRowAut($this->getTable(), $where);
-        return TRUE;
+
+    /**
+     * คืนค่าจริง เมื่อเป็นเจ้าของ หรืออยู่ในกลุ่มเดียวกับเจ้าของ
+     * @return boolean ค่าจริงเมื่อผู้ใช้งานมีชื่อเป็นเจ้าของข้อมูล
+     */
+    public function isOwner($user) {
+        //$sign
+        $sec_owner=$this->OrrModel->getSecOwner($this->getTable());
+        //return TRUE;
+        return ($user == $sec_owner)?TRUE:FALSE;
     }
-    
-    public function isCanDel(){
+
+    public function isCanDel() {
         return FALSE;
     }
 

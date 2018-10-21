@@ -100,7 +100,7 @@ class MY_Controller extends CI_Controller {
             $output->view_ = $this->Sign_;
             $output->orr_ = $this->Orr_;
             $child = $this->DbAcrud->getSysChild();
-            $sys_child = (array_key_exists($this->Sign_['project'], $child))?$child[$this->Sign_['project']]:[''=>'---'];
+            $sys_child = (array_key_exists($this->Sign_['project'], $child)) ? $child[$this->Sign_['project']] : ['' => '---'];
             $menu_ = ['my_sys' => $sys_child, 'projects_url' => site_url('Setting'), 'mark_url' => site_url('Mark/signout'), 'mark_user' => $this->Sign_['user'], 'mark_user_icon' => "glyphicon glyphicon-user", 'mark_function' => "Sign Out", 'mark_function_icon' => "glyphicon glyphicon-log-out"];
             $output->menu_ = $menu_;
             $output->view_['css_files'] = [base_url('assets/jquery-ui/jquery-ui.min.css'), base_url('assets/bootstrap-3/css/bootstrap.min.css')];
@@ -110,8 +110,8 @@ class MY_Controller extends CI_Controller {
     }
 
     public function eventBeforeInsert($val_) {
-        $sign_data = ['sec_owner'=> $this->Sign_['user'],'sec_user'=> $this->Sign_['user'],'sec_time'=>date("Y-m-d H:i:s"),'sec_ip'=> $this->Sign_['ip_address'],'sec_script'=> $this->Sign_['script']];
-        $val_->data = array_merge($val_->data,$sign_data);
+        $sign_data = ['sec_owner' => $this->Sign_['user'], 'sec_user' => $this->Sign_['user'], 'sec_time' => date("Y-m-d H:i:s"), 'sec_ip' => $this->Sign_['ip_address'], 'sec_script' => $this->Sign_['script']];
+        $val_->data = array_merge($val_->data, $sign_data);
         return $val_;
     }
 
@@ -121,14 +121,13 @@ class MY_Controller extends CI_Controller {
     }
 
     public function eventBeforeUpdate($val_) {
-        $sign_data = ['sec_user'=> $this->Sign_['user'],'sec_time'=>date("Y-m-d H:i:s"),'sec_ip'=> $this->Sign_['ip_address'],'sec_script'=> $this->Sign_['script']];
-        $val_->data = array_merge($val_->data,$sign_data);
+        $sign_data = ['sec_user' => $this->Sign_['user'], 'sec_time' => date("Y-m-d H:i:s"), 'sec_ip' => $this->Sign_['ip_address'], 'sec_script' => $this->Sign_['script']];
+        $val_->data = array_merge($val_->data, $sign_data);
         return $val_;
     }
 
     public function eventAfterUpdate($val_) {
         $this->addActivityPostLog(print_r($val_, TRUE), 'AfterUpdate');
-
         return $val_;
     }
 
@@ -159,16 +158,21 @@ class MY_Controller extends CI_Controller {
                 $this->eventInsertState();
                 break;
             case 'EditForm';
-                  //print_r($this->DbAcrud->getStateInfo() );
-                  //print_r($this->DbAcrud->getPrimaryKeys());
-                if(!$this->DbAcrud->isCanEdit()){
-                    $info_=$this->DbAcrud->getStateInfo();
+                //print_r($this->DbAcrud->getStateInfo() );
+                //print_r($this->DbAcrud->getPrimaryKeys());
+                if (!$this->DbAcrud->isCanEdit()) {
+                    $info_ = $this->DbAcrud->getStateInfo();
                     $this->setMyJsonMessageFailure("ไม่มีสิทธิ์แก้ไขข้อมูล");
                 }
                 $this->eventEditFormState();
                 break;
             case 'Update';
                 $this->eventUpdateState();
+                break;
+            case 'Upload';
+                //$this->eventUploadState();
+                break;
+            case 'DeleteFile';
                 break;
             case 'ReadForm';
                 $this->eventReadFormState();
@@ -179,8 +183,12 @@ class MY_Controller extends CI_Controller {
             case 'RemoveMultiple';
                 $this->eventRemoveMultipleState();
                 break;
+            case 'CloneForm';
+                break;
+            case 'Clone';
+                break;
             default :
-            $this->setMyJsonMessageFailure("State = $state");
+                $this->setMyJsonMessageFailure("State = $state");
         }
         return NULL;
     }
