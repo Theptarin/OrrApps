@@ -17,9 +17,22 @@ class MY_Controller extends CI_Controller {
     private $DbAcrud = NULL;
 
     /**
-     * @var Array รับค่า getSignData()
+     * ข้อมูลผู้ใช้งาน
+     * @var array จาก getSignData()
      */
     protected $Sign_ = [];
+    
+    /**
+     * ข้อกำหนดสิทธิการใช้โปรแกรม
+     * @var array จาก getAutData()
+     */
+    protected $Aut_ = [];
+    
+    /**
+     * ข้อมูลการสร้าง แก้ไข ข้อมูล
+     * @var array  
+     */
+    protected $Sec_ = [];
 
     /**
      * @var array ข้อมูลเกี่ยวกับอ๋อแอป [title] 
@@ -53,6 +66,7 @@ class MY_Controller extends CI_Controller {
     protected function setACRUD(OrrACRUD $acrud) {
         $this->DbAcrud = $acrud;
         $this->Sign_ = $acrud->getSignData();
+        $this->Aut_ = $acrud->getAutData();
         if ($this->Sign_['status'] === 'Online') {
             $this->initACRUD();
             $this->eventState($this->DbAcrud->getState());
@@ -140,6 +154,15 @@ class MY_Controller extends CI_Controller {
         $this->addActivityPostLog(print_r($val_, TRUE), 'AfterDeleteMultiple');
         return $val_;
     }
+    
+    /**
+     * เป็น ผู้ใช้งานที่สามารถแก้ไขข้อมูล
+     * @return boolean คืนค่าจริง เมื่อมีสิทธิแก้ไขข้อมูล
+     */
+    protected function isCanEdit(){
+        $this->DbAcrud->getSecData(1);
+        return ($this->Aut_['aut_any'] > 1)?TRUE:($this->DbAcrud->isGod())?TRUE:FALSE;
+    }
 
     protected function eventState($state) {
         switch ($state) {
@@ -158,13 +181,7 @@ class MY_Controller extends CI_Controller {
                 $this->eventInsertState();
                 break;
             case 'EditForm';
-                //print_r($this->DbAcrud->getStateInfo() );
-                //print_r($this->DbAcrud->getPrimaryKeys());
-                if (!$this->DbAcrud->isCanEdit()) {
-                    $info_ = $this->DbAcrud->getStateInfo();
-                    $this->setMyJsonMessageFailure("ไม่มีสิทธิ์แก้ไขข้อมูล");
-                }
-                $this->eventEditFormState();
+                ($this->isCanEdit())?$this->eventEditFormState():$this->setMyJsonMessageFailure("<b>ไม่มีสิทธิ์แก้ไขข้อมูลรายการนี้</b>");
                 break;
             case 'Update';
                 $this->eventUpdateState();

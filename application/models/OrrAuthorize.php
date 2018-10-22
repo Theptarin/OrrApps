@@ -31,7 +31,7 @@ class OrrAuthorize extends CI_Model {
     /**
      * @var array ข้อกำหนดตามโปรแกรมตามทะเบียน
      */
-    private $sysAut = [];
+    private $secData = [];
 
     public function __construct() {
         parent::__construct();
@@ -64,8 +64,8 @@ class OrrAuthorize extends CI_Model {
     public function isSystemOk() {
         $sql = "SELECT *  FROM `my_sys` WHERE `sys_id` = ?";
         $query = $this->db->query($sql, [$this->signData['script']]);
-        $this->sysAut = ($query->num_rows() === 1) ? $query->row_array() : die("ไม่มีโปรแกรมในทะเบียน");
-        return ($this->sysAut['use_list']) ? TRUE : ($this->signData['user'] === $this->sysAut['sec_owner']) ? TRUE : $this->isAutOK();
+        $this->secData = ($query->num_rows() === 1) ? $query->row_array() : die("ไม่มีโปรแกรมในทะเบียน");
+        return ($this->secData['use_list']) ? TRUE : ($this->signData['user'] === $this->secData['sec_owner']) ? TRUE : $this->isAutOK();
     }
 
     /**
@@ -74,7 +74,7 @@ class OrrAuthorize extends CI_Model {
      */
     public function isAutOK() {
         $sql = "SELECT *  FROM `my_can` WHERE `sys_id` = ? AND user_id = ?";
-        $query = $this->db->query($sql, [$this->sysAut['sys_id'], $this->signData['id']]);
+        $query = $this->db->query($sql, [$this->secData['sys_id'], $this->signData['id']]);
         return ($query->num_rows() === 1) ? TRUE : die("ไม่มีสิทธิเรียกใช้โปรแกรม");
     }
 
@@ -83,7 +83,7 @@ class OrrAuthorize extends CI_Model {
      * @return boolean ค่าจริงเมื่อกำหนดใช้สิทธิผู้ดูแลข้อมูล และ ผู้ใช้งานตรงกับเจ้าของโปรแกรม
      */
     public function isGod() {
-        return($this->sysAut['aut_god'] == 0 && $this->sysAut['sec_owner'] === $this->signData['user']) ? TRUE : FALSE;
+        return($this->secData['aut_god'] == 0 && $this->secData['sec_owner'] === $this->signData['user']) ? TRUE : FALSE;
     }
 
     /**
@@ -105,8 +105,8 @@ class OrrAuthorize extends CI_Model {
      * คืนค่า สิทธิ์การใช้ข้อมูลตามประเภท
      * @return array ['aut_user','aut_group','aut_any']
      */
-    public function getSysAut() {
-        return $this->sysAut;
+    public function getAutData() {
+        return $this->secData;
     }
 
     /**
