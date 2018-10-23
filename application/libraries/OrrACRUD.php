@@ -19,21 +19,29 @@ class OrrACRUD extends GroceryCrud {
     protected $modelOrr = NULL;
     protected $secFields = ['sec_owner', 'sec_user', 'sec_time', 'sec_ip', 'sec_script', 'val_pass'];
     protected $language = 'Thai';
+    protected $dbStatus = ['group' => NULL, 'table_name' => NULL];
 
-    public function __construct($group, $db = null) {
+    public function __construct($conn_group, $db = null) {
         $ci = &get_instance();
         $ci->load->model('OrrAuthorize');
         $this->modelAuthorize = new OrrAuthorize();
         $ci->load->model('OrrModel');
         $this->modelOrr = new OrrModel();
+        $this->dbStatus['group'] = $conn_group;
         if ($this->modelAuthorize->isReady()) {
             //Configulation CRUD
             $config = include(APPPATH . 'config/gcrud-enterprise.php');
             parent::__construct($config, $db);
-            $this->modelOrr->setDb($group);
+            $this->modelOrr->setDb($this->dbStatus['group']);
             $this->unsetFields($this->secFields)->unsetColumns($this->secFields)
                     ->setLanguage($this->language)->setLabelAs(['sec_owner', 'sec_user', 'sec_time', 'sec_ip', 'sec_script']);
         }
+    }
+
+    public function setTable($table_name) {
+        $this->dbStatus['table_name'] = $table_name;
+        parent::setTable($this->dbStatus['table_name']);
+        return $this;
     }
 
     public function getSignData() {
@@ -52,7 +60,7 @@ class OrrACRUD extends GroceryCrud {
     }
 
     public function getAllFields() {
-        return $this->modelOrr->getAllFields($this->getTable());
+        return $this->modelOrr->getAllFields($this->dbStatus['table_name']);
     }
 
     public function getSignUrl() {

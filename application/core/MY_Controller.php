@@ -84,9 +84,10 @@ class MY_Controller extends CI_Controller {
                 ->callbackAfterInsert(array($this, 'eventAfterInsert'))
                 ->callbackBeforeUpdate(array($this, 'eventBeforeUpdate'))
                 ->callbackAfterUpdate(array($this, 'eventAfterUpdate'))
+                ->callbackBeforeDelete(array($this, 'initBeforeDelete'))
                 ->callbackAfterDelete(array($this, 'eventAfterDelete'))
                 ->callbackAfterDeleteMultiple(array($this, 'eventAfterDeleteMultiple'))
-                ->callbackEditForm(array($this, 'eventEditForm'));
+                ->callbackEditForm(array($this, 'initEditForm'));
         return $this;
     }
 
@@ -129,32 +130,6 @@ class MY_Controller extends CI_Controller {
         return $val_;
     }
 
-    public function eventEditForm($val_) {
-        ($this->isCanEdit($val_['sec_owner'])) ? TRUE : $this->setMyJsonMessageFailure('<b> ไม่มีสิทธิ์แก้ไขข้อมูล รายการนี้ กรุณาแจ้ง ผู้ใช้งานที่ใช้รหัสว่า  </b>' . $val_['sec_owner']);
-        return $val_;
-    }
-
-    public function eventBeforeUpdate($val_) {
-        $sign_data = ['sec_user' => $this->Sign_['user'], 'sec_time' => date("Y-m-d H:i:s"), 'sec_ip' => $this->Sign_['ip_address'], 'sec_script' => $this->Sign_['script']];
-        $val_->data = array_merge($val_->data, $sign_data);
-        return $val_;
-    }
-
-    public function eventAfterUpdate($val_) {
-        $this->addActivityPostLog(print_r($val_, TRUE), 'AfterUpdate');
-        return $val_;
-    }
-
-    public function eventAfterDelete($val_) {
-        $this->addActivityPostLog(print_r($val_, TRUE), 'AfterDelete');
-        return $val_;
-    }
-
-    public function eventAfterDeleteMultiple($val_) {
-        $this->addActivityPostLog(print_r($val_, TRUE), 'AfterDeleteMultiple');
-        return $val_;
-    }
-
     /**
      * เป็น ผู้ใช้งานที่สามารถแก้ไขข้อมูล
      * @return boolean คืนค่าจริง เมื่อมีสิทธิแก้ไขข้อมูล
@@ -169,6 +144,73 @@ class MY_Controller extends CI_Controller {
         } else {
             return FALSE;
         }
+    }
+
+    /**
+     * การตรวจสอบสิทธิ์แก้ไขข้อมูล
+     * @param type $val_
+     * @return -
+     */
+    public function initEditForm($val_) {
+        ($this->isCanEdit($val_['sec_owner'])) ? TRUE : $this->setMyJsonMessageFailure('<b> ไม่มีสิทธิ์แก้ไขข้อมูล รายการนี้ กรุณาแจ้ง ผู้ใช้งานที่ใช้รหัสว่า  </b>' . $val_['sec_owner']);
+        return $this->eventEditForm($val_);
+    }
+
+    /**
+     * เหตุการณ์ เปิดหน้าจอแก้ไขข้อมูล
+     * @param type $val_
+     * @return -
+     */
+    public function eventEditForm($val_) {
+        return $val_;
+    }
+
+    public function eventBeforeUpdate($val_) {
+        $sign_data = ['sec_user' => $this->Sign_['user'], 'sec_time' => date("Y-m-d H:i:s"), 'sec_ip' => $this->Sign_['ip_address'], 'sec_script' => $this->Sign_['script']];
+        $val_->data = array_merge($val_->data, $sign_data);
+        return $val_;
+    }
+
+    public function eventAfterUpdate($val_) {
+        $this->addActivityPostLog(print_r($val_, TRUE), 'AfterUpdate');
+        return $val_;
+    }
+
+    /**
+     * @todo หาเหตุการณ์ที่ตรวจสอบ
+     * เป็น ผู้ใช้งานที่สามารถลบข้อมูล
+     * @return boolean คืนค่าจริง เมื่อมีสิทธิแก้ไขข้อมูล
+     */
+    protected function isCanDelete($sec_owner) {
+        if ($this->Aut_['aut_any'] > 1 || $this->DbAcrud->isGod()) {
+            return TRUE;
+        } else if ($this->Sign_['user'] == $sec_owner && $this->Aut_['aut_user'] > 1) {
+            return TRUE;
+        } elseif ($this->DbAcrud->isGroup($sec_owner) && $this->Aut_['aut_group'] > 1) {
+            return TRUE;
+        } else {
+            return FALSE;
+        }
+    }
+    
+    /**
+     * การตรวจสอบสิทธิ์แก้ไขข้อมูล
+     * @param type $val_
+     * @return -
+     */
+    public function initBeforeDelete($val_) {
+        $this->addActivityPostLog(print_r($this->DbAcrud->getTable(), TRUE), 'BeforeDelete');
+        return $val_;
+    }
+    
+    public function eventAfterDelete($val_) {
+        $this->addActivityPostLog(print_r($this->DbAcrud->getTable(), TRUE), 'AfterDelete');
+        return $val_;
+    }
+
+    public function eventAfterDeleteMultiple($val_) {
+        $this->addActivityPostLog(print_r($val_, TRUE), 'AfterDeleteMultiple');
+        return $val_;
     }
 
     protected function eventState($state) {
