@@ -27,13 +27,4 @@ class OrrModel extends CI_Model {
         return $this->db->list_fields($table);
     }
 
-    public function getSecData($key_value,$key_name,$table_name) {
-        
-        /**
-         * ทำต่อไป
-         */
-        
-        return "";
-    }
-
 }

@@ -85,6 +85,29 @@ class OrrAuthorize extends CI_Model {
     public function isGod() {
         return($this->secData['aut_god'] == 0 && $this->secData['sec_owner'] === $this->signData['user']) ? TRUE : FALSE;
     }
+    
+    /**
+     * ข้อมูลผู้ใช้งานตามรหัสผู้ใช้งาน
+     * @param integer $id รหัสผู้ใช้งาน
+     * @return object ข้อมูลผู้ใช้งาน
+     */
+    public function getUserInfo($user){
+        $sql = "SELECT *  FROM `my_user` WHERE `user` = ?";
+        $query = $this->db->query($sql, [$user]);
+        return ($query->num_rows()===1)?$query->row_array():NULL;
+    }
+    
+    /**
+     * เป็นผู้ใช้งานกลุ่มเดียวกัน
+     * @param string $sec_owner รหัสเจ้าของข้อมูล
+     * @return boolean ค่าจริงเมื่อเป็นผู้ใช้งานกลุ่มเดียวกัน
+     */
+    public function isGroup($sec_owner){
+        $sql = "SELECT *  FROM `my_user_group` WHERE `group_id` = ? AND `user_id` = ?";
+        $user_ = $this->getUserInfo($sec_owner);
+        $query = $this->db->query($sql, [$user_['id'], $this->signData['id']]);
+        return ($query->num_rows() === 1) ? TRUE : FALSE;
+    }
 
     /**
      * ลบรายการผู้ใช้งานที่ระบุในทะเบียนผู้ใช้งานที่ระบุ

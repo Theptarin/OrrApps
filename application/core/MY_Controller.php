@@ -14,25 +14,19 @@ class MY_Controller extends CI_Controller {
     /**
      * @var Object OrrAcrud use private
      */
-    private $DbAcrud = NULL;
+    protected $DbAcrud = NULL;
 
     /**
      * ข้อมูลผู้ใช้งาน
      * @var array จาก getSignData()
      */
     protected $Sign_ = [];
-    
+
     /**
      * ข้อกำหนดสิทธิการใช้โปรแกรม
      * @var array จาก getAutData()
      */
     protected $Aut_ = [];
-    
-    /**
-     * ข้อมูลการสร้าง แก้ไข ข้อมูล
-     * @var array  
-     */
-    protected $Sec_ = [];
 
     /**
      * @var array ข้อมูลเกี่ยวกับอ๋อแอป [title] 
@@ -91,7 +85,8 @@ class MY_Controller extends CI_Controller {
                 ->callbackBeforeUpdate(array($this, 'eventBeforeUpdate'))
                 ->callbackAfterUpdate(array($this, 'eventAfterUpdate'))
                 ->callbackAfterDelete(array($this, 'eventAfterDelete'))
-                ->callbackAfterDeleteMultiple(array($this, 'eventAfterDeleteMultiple'));
+                ->callbackAfterDeleteMultiple(array($this, 'eventAfterDeleteMultiple'))
+                ->callbackEditForm(array($this, 'eventEditForm'));
         return $this;
     }
 
@@ -134,6 +129,11 @@ class MY_Controller extends CI_Controller {
         return $val_;
     }
 
+    public function eventEditForm($val_) {
+        ($this->isCanEdit($val_['sec_owner'])) ? TRUE : $this->setMyJsonMessageFailure('<b> ไม่มีสิทธิ์แก้ไขข้อมูล รายการนี้ กรุณาแจ้ง ผู้ใช้งานที่ใช้รหัสว่า  </b>' . $val_['sec_owner']);
+        return $val_;
+    }
+
     public function eventBeforeUpdate($val_) {
         $sign_data = ['sec_user' => $this->Sign_['user'], 'sec_time' => date("Y-m-d H:i:s"), 'sec_ip' => $this->Sign_['ip_address'], 'sec_script' => $this->Sign_['script']];
         $val_->data = array_merge($val_->data, $sign_data);
@@ -154,14 +154,21 @@ class MY_Controller extends CI_Controller {
         $this->addActivityPostLog(print_r($val_, TRUE), 'AfterDeleteMultiple');
         return $val_;
     }
-    
+
     /**
      * เป็น ผู้ใช้งานที่สามารถแก้ไขข้อมูล
      * @return boolean คืนค่าจริง เมื่อมีสิทธิแก้ไขข้อมูล
      */
-    protected function isCanEdit(){
-        $this->DbAcrud->getSecData(1);
-        return ($this->Aut_['aut_any'] > 1)?TRUE:($this->DbAcrud->isGod())?TRUE:FALSE;
+    protected function isCanEdit($sec_owner) {
+        if ($this->Aut_['aut_any'] > 1 || $this->DbAcrud->isGod()) {
+            return TRUE;
+        } else if ($this->Sign_['user'] == $sec_owner && $this->Aut_['aut_user'] > 1) {
+            return TRUE;
+        } elseif ($this->DbAcrud->isGroup($sec_owner) && $this->Aut_['aut_group'] > 1) {
+            return TRUE;
+        } else {
+            return FALSE;
+        }
     }
 
     protected function eventState($state) {
@@ -181,7 +188,6 @@ class MY_Controller extends CI_Controller {
                 $this->eventInsertState();
                 break;
             case 'EditForm';
-                ($this->isCanEdit())?$this->eventEditFormState():$this->setMyJsonMessageFailure("<b>ไม่มีสิทธิ์แก้ไขข้อมูลรายการนี้</b>");
                 break;
             case 'Update';
                 $this->eventUpdateState();

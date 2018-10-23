@@ -55,10 +55,6 @@ class OrrACRUD extends GroceryCrud {
         return $this->modelOrr->getAllFields($this->getTable());
     }
 
-    public function getSecData($value) {
-        return $this->modelOrr->getSecData($value, $this->getTable(), $this->getPrimaryKeys());
-    }
-
     public function getSignUrl() {
         return site_url('Mark');
     }
@@ -79,12 +75,12 @@ class OrrACRUD extends GroceryCrud {
         $this->modelAuthorize->setUserListEmpty($sys_id);
     }
 
-    /**
-     * เป็น ผู้ดูแลโปรแกรม
-     * @return boolean ค่าจริง เมื่อผู้ใช้งาน เป็นผู้ตรวจสอบแก้ไขข้อมูลทั้งหมดในโปรแกรมได้
-     */
     public function isGod() {
         return $this->modelAuthorize->isGod();
+    }
+
+    public function isGroup($sec_owner) {
+        return $this->modelAuthorize->isGroup($sec_owner);
     }
 
 }
