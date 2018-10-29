@@ -175,9 +175,23 @@ class MY_Controller extends CI_Controller {
         $this->addActivityPostLog(print_r($val_, TRUE), 'AfterUpdate');
         return $val_;
     }
+    
+    /**
+     * การตรวจสอบความถูกต้องก่อนการลบรายการ
+     * @param type $val_
+     * @return -
+     */
+    public function initBeforeDelete($val_) {
+        /**
+         * รอทำต่อไป
+         */
+        $message = "TEST BeforeDelete" . print_r($this->DbAcrud->getTable(), TRUE);
+        $this->setMyJsonMessageFailure($message);
+        return $val_;
+    }
 
     /**
-     * @todo หาเหตุการณ์ที่ตรวจสอบ
+     * @todo หาเหตุการณ์ที่ตรวจสอบ และวิธีหา sec_owner
      * เป็น ผู้ใช้งานที่สามารถลบข้อมูล
      * @return boolean คืนค่าจริง เมื่อมีสิทธิแก้ไขข้อมูล
      */
@@ -191,16 +205,6 @@ class MY_Controller extends CI_Controller {
         } else {
             return FALSE;
         }
-    }
-    
-    /**
-     * การตรวจสอบสิทธิ์แก้ไขข้อมูล
-     * @param type $val_
-     * @return -
-     */
-    public function initBeforeDelete($val_) {
-        $this->addActivityPostLog(print_r($this->DbAcrud->getTable(), TRUE), 'BeforeDelete');
-        return $val_;
     }
     
     public function eventAfterDelete($val_) {
