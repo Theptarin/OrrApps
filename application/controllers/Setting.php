@@ -35,7 +35,7 @@ class Setting extends MY_Controller {
      */
     public function mySys() {
         $crud = $this->Acrud;
-        $crud->setTable('my_sys')->setClone();
+        $crud->setTable('my_sys');
         $fields = $this->getAllFields();
         $my_fields = array_merge($fields, ['user_list']);
         $crud->columns($fields)->fields($my_fields)->requiredFields(['sys_id', 'title', 'mnu_order']);

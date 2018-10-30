@@ -47,6 +47,10 @@ class OrrACRUD extends GroceryCrud {
     public function getSignData() {
         return $this->modelAuthorize->getSignData();
     }
+    
+    public function getSecInfo($table, $sec_keys){
+        return $this->modelOrr->getSecInfo($table, $sec_keys);
+    }
 
     public function setLabelAs(array $fields) {
         $rows = $this->modelAuthorize->getFieldsLabel($fields);

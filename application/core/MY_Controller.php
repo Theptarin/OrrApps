@@ -78,7 +78,7 @@ class MY_Controller extends CI_Controller {
     }
 
     protected function initACRUD() {
-        $this->DbAcrud->unsetBootstrap()->unsetJquery()->unsetJqueryUi();
+        $this->DbAcrud->unsetBootstrap()->unsetJquery()->unsetJqueryUi()->unsetDeleteMultiple();
         $this->DbAcrud->setSubject('รายการใหม่', $this->Sign_['form_title']);
         $this->DbAcrud->callbackBeforeInsert(array($this, 'eventBeforeInsert'))
                 ->callbackAfterInsert(array($this, 'eventAfterInsert'))
@@ -149,7 +149,7 @@ class MY_Controller extends CI_Controller {
     /**
      * การตรวจสอบสิทธิ์แก้ไขข้อมูล
      * @param type $val_
-     * @return -
+     * @return object
      */
     public function initEditForm($val_) {
         ($this->isCanEdit($val_['sec_owner'])) ? TRUE : $this->setMyJsonMessageFailure('<b> ไม่มีสิทธิ์แก้ไขข้อมูล รายการนี้ กรุณาแจ้ง ผู้ใช้งานที่ใช้รหัสว่า  </b>' . $val_['sec_owner']);
@@ -175,18 +175,24 @@ class MY_Controller extends CI_Controller {
         $this->addActivityPostLog(print_r($val_, TRUE), 'AfterUpdate');
         return $val_;
     }
-    
+
     /**
-     * การตรวจสอบความถูกต้องก่อนการลบรายการ
-     * @param type $val_
-     * @return -
+     * เหตการณ์ก่อนการลบรายการ
+     * @param object $val_
+     * @return object
      */
     public function initBeforeDelete($val_) {
-        /**
-         * รอทำต่อไป
-         */
-        $message = "TEST BeforeDelete" . print_r($this->DbAcrud->getTable(), TRUE);
-        $this->setMyJsonMessageFailure($message);
+        $info = $this->DbAcrud->getSecInfo($this->DbAcrud->getTable(), ['sys_id' => $val_->primaryKeyValue]);
+        ($this->isCanDelete($info->sec_owner)) ? TRUE : $this->setMyJsonMessageFailure('<b> ไม่มีสิทธิ์ลบข้อมูล รายการนี้ กรุณาแจ้ง ผู้ใช้งานที่ใช้รหัสว่า  </b>' . $info->sec_owner);
+        return $this->eventBeforeDelete($val_);
+    }
+
+    /**
+     * เหตการณ์ก่อนการลบรายการ หลังการสอบตราจสอบสิทธิ์การใช้ข้อมูล
+     * @param object $val_
+     * @return object
+     */
+    public function eventBeforeDelete($val_) {
         return $val_;
     }
 
@@ -198,15 +204,15 @@ class MY_Controller extends CI_Controller {
     protected function isCanDelete($sec_owner) {
         if ($this->Aut_['aut_any'] > 1 || $this->DbAcrud->isGod()) {
             return TRUE;
-        } else if ($this->Sign_['user'] == $sec_owner && $this->Aut_['aut_user'] > 1) {
+        } else if ($this->Sign_['user'] == $sec_owner && $this->Aut_['aut_user'] > 2) {
             return TRUE;
-        } elseif ($this->DbAcrud->isGroup($sec_owner) && $this->Aut_['aut_group'] > 1) {
+        } elseif ($this->DbAcrud->isGroup($sec_owner) && $this->Aut_['aut_group'] > 2) {
             return TRUE;
         } else {
             return FALSE;
         }
     }
-    
+
     public function eventAfterDelete($val_) {
         $this->addActivityPostLog(print_r($this->DbAcrud->getTable(), TRUE), 'AfterDelete');
         return $val_;
