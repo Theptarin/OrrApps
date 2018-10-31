@@ -71,6 +71,8 @@ class Setting extends MY_Controller {
     public function myDatafield() {
         $crud = $this->Acrud;
         $crud->setTable('my_datafield');
+        $fields = $this->getAllFields();
+        $crud->columns($fields)->fields($fields)->requiredFields(['field_id','name']);
         $output = $crud->render();
         $this->setMyView($output);
     }

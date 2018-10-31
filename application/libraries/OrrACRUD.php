@@ -33,14 +33,14 @@ class OrrACRUD extends GroceryCrud {
             $config = include(APPPATH . 'config/gcrud-enterprise.php');
             parent::__construct($config, $db);
             $this->modelOrr->setDb($this->dbStatus['group']);
-            $this->unsetFields($this->secFields)->unsetColumns($this->secFields)
-                    ->setLanguage($this->language)->setLabelAs(['sec_owner', 'sec_user', 'sec_time', 'sec_ip', 'sec_script']);
+            $this->unsetFields($this->secFields)->unsetColumns($this->secFields)->setLanguage($this->language);
         }
     }
 
     public function setTable($table_name) {
         $this->dbStatus['table_name'] = $table_name;
         parent::setTable($this->dbStatus['table_name']);
+        $this->setLabelAs(array_merge($this->getAllFields(), ['sec_owner', 'sec_user', 'sec_time', 'sec_ip', 'sec_script']));
         return $this;
     }
 
