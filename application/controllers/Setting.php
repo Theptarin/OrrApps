@@ -58,18 +58,11 @@ class Setting extends MY_Controller {
     public function myUser() {
         $crud = $this->Acrud;
         $crud->setTable('my_user')->unsetDelete()->unsetDeleteMultiple();
-        $crud->columns(['user', 'prefix', 'fname', 'lname', 'status'])->requiredFields(['prefix', 'fname', 'lname'])->readOnlyEditFields(['user']);
-        $crud->fieldType('status', 'dropdown', $this->Status_)->fieldType('password', 'password')->fieldType('confirm_password', 'password');
-        /**
-         * Bug ลบ User Group ทั้งหมดไม่ได้
-         */
-        $crud->setRelationNtoN('user_group', 'my_user_group', 'my_user', 'group_id', 'user_id', '{user} {fname} {lname}', 'user', ['status' => '0']);
-        /**
-         * Default value add form
-         */
+        $crud->columns(['user', 'prefix', 'fname', 'lname', 'status','my_membership'])->requiredFields(['prefix', 'fname', 'lname'])->readOnlyEditFields(['user']);
+        $crud->fieldType('status', 'dropdown', $this->Status_)->fieldType('password', 'password')->fieldType('confirm_password', 'password')->fieldType('member_list', 'dropdown', $this->Status_);
+        $crud->setRelationNtoN('my_membership', 'my_user_group', 'my_user', 'group_id', 'user_id', '{user} {fname} {lname}', 'user');
         $crud->callbackAddForm(function ($data) {
-            $data['status'] = 1;
-            return $data;
+            return array_merge($data, ['status' => 1, 'member_list' => 1]);
         });
         $output = $crud->render();
         $this->setMyView($output);
@@ -148,9 +141,10 @@ class Setting extends MY_Controller {
         } else {
             switch ($this->Acrud->getTable()) {
                 case 'my_sys':
-                    if ($val_->data['use_list'] == 1) {
-                        $this->Acrud->setUserListEmpty($val_->data['sys_id']);
-                    }
+                    ($val_->data['use_list'] == 1)?$this->Acrud->setUseListEmpty($val_->primaryKeyValue):FALSE;
+                    break;
+                case 'my_user':
+                    ($val_->data['member_list'] == 1)?$this->Acrud->setMemberListEmpty($val_->primaryKeyValue):FALSE;
                     break;
                 default:
                     break;

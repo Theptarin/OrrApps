@@ -47,8 +47,8 @@ class OrrACRUD extends GroceryCrud {
     public function getSignData() {
         return $this->modelAuthorize->getSignData();
     }
-    
-    public function getSecInfo($table, $sec_keys){
+
+    public function getSecInfo($table, $sec_keys) {
         return $this->modelOrr->getSecInfo($table, $sec_keys);
     }
 
@@ -83,8 +83,12 @@ class OrrACRUD extends GroceryCrud {
         return $this->modelAuthorize->getAutData();
     }
 
-    public function setUserListEmpty($sys_id) {
-        $this->modelAuthorize->setUserListEmpty($sys_id);
+    public function setUseListEmpty($sys_id) {
+        $this->modelAuthorize->setUseListEmpty($sys_id);
+    }
+
+    public function setMemberListEmpty($id) {
+        $this->modelAuthorize->setMemberListEmpty($id);
     }
 
     public function isGod() {

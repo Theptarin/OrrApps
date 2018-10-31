@@ -202,7 +202,7 @@ class MY_Controller extends CI_Controller {
      * @return boolean คืนค่าจริง เมื่อมีสิทธิแก้ไขข้อมูล
      */
     protected function isCanDelete($sec_owner) {
-        if ($this->Aut_['aut_any'] > 1 || $this->DbAcrud->isGod()) {
+        if ($this->Aut_['aut_any'] > 2 || $this->DbAcrud->isGod()) {
             return TRUE;
         } else if ($this->Sign_['user'] == $sec_owner && $this->Aut_['aut_user'] > 2) {
             return TRUE;
