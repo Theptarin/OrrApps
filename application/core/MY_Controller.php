@@ -32,6 +32,14 @@ class MY_Controller extends CI_Controller {
      * @var array ข้อมูลเกี่ยวกับอ๋อแอป [title] 
      */
     protected $Orr_ = ['title' => "Orr Projects"];
+    
+    /**
+     *
+     * @var object 
+     */
+    protected $Info = NULL;
+    
+    protected $PrimaryKeyName = "id";
 
     public function __construct() {
         parent::__construct();
@@ -175,15 +183,22 @@ class MY_Controller extends CI_Controller {
         $this->addActivityPostLog(print_r($val_, TRUE), 'AfterUpdate');
         return $val_;
     }
+    /**
+     * กำหนดชื่อคีย์ฟิลด์สำหรับการลบข้อมูล
+     * @param string $name กำหนดชื่อคีย์สำหรับการลบข้อมูล
+     */
+    public function setPrimaryKeyName($name){
+        $this->PrimaryKeyName = $name;
+        return $this;
+    }
 
     /**
      * เหตการณ์ก่อนการลบรายการ
      * @param object $val_
      * @return object
      */
-    public function initBeforeDelete($val_) {
-        $info = $this->DbAcrud->getSecInfo($this->DbAcrud->getTable(), ['sys_id' => $val_->primaryKeyValue]);
-        ($this->isCanDelete($info->sec_owner)) ? TRUE : $this->setMyJsonMessageFailure('<b> ไม่มีสิทธิ์ลบข้อมูล รายการนี้ กรุณาแจ้ง ผู้ใช้งานที่ใช้รหัสว่า  </b>' . $info->sec_owner);
+    public function initBeforeDelete($val_) {        
+        ($this->isCanDelete([$this->PrimaryKeyName => $val_->primaryKeyValue])) ? TRUE : $this->setMyJsonMessageFailure('<b> ไม่มีสิทธิ์ลบข้อมูล รายการนี้ กรุณาแจ้ง ผู้ใช้งานที่ใช้รหัสว่า  </b>' . $this->Info->sec_owner);
         return $this->eventBeforeDelete($val_);
     }
 
@@ -201,7 +216,9 @@ class MY_Controller extends CI_Controller {
      * เป็น ผู้ใช้งานที่สามารถลบข้อมูล
      * @return boolean คืนค่าจริง เมื่อมีสิทธิแก้ไขข้อมูล
      */
-    protected function isCanDelete($sec_owner) {
+    protected function isCanDelete($key_) {
+        $this->Info = $this->DbAcrud->getSecInfo($this->DbAcrud->getTable(), $key_);      
+        $sec_owner = $this->Info->sec_owner;
         if ($this->Aut_['aut_any'] > 2 || $this->DbAcrud->isGod()) {
             return TRUE;
         } else if ($this->Sign_['user'] == $sec_owner && $this->Aut_['aut_user'] > 2) {

@@ -34,6 +34,7 @@ class Setting extends MY_Controller {
      * @return void
      */
     public function mySys() {
+        $this->PrimaryKeyName="sys_id";
         $crud = $this->Acrud;
         $crud->setTable('my_sys');
         $fields = $this->getAllFields();
@@ -44,7 +45,7 @@ class Setting extends MY_Controller {
         $crud->setRule('sys_id', 'regex', '/^[a-zA-Z0-9]{3,10} *_/')->setRule('mnu_order', 'integer');
         $crud->setRelationNtoN('user_list', 'my_can', 'my_user', 'sys_id', 'user_id', '{user} {fname} {lname}', 'user', ['status' => '0']);
         $crud->callbackAddForm(function ($data) {
-            return array_merge($data, ['use_list' => 1, 'aut_user' => 1, 'aut_group' => 2, 'aut_any' => 1, 'aut_god' => 1]);
+            return array_merge($data, ['use_list' => 1, 'aut_user' => 2, 'aut_group' => 1, 'aut_any' => 1, 'aut_god' => 1]);
         });
         $output = $crud->render();
         $this->setMyView($output);
@@ -69,6 +70,7 @@ class Setting extends MY_Controller {
     }
 
     public function myDatafield() {
+        $this->PrimaryKeyName="field_id";
         $crud = $this->Acrud;
         $crud->setTable('my_datafield');
         $fields = $this->getAllFields();
