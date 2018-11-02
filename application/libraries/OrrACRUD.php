@@ -57,6 +57,7 @@ class OrrACRUD extends GroceryCrud {
         foreach ($rows as $field_) {
             $this->displayAs($field_['field_id'], $field_['name']);
         }
+        return $this;
     }
 
     public function AddActivity($txt_log) {
