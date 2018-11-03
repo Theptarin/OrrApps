@@ -16,20 +16,21 @@ class IMC extends MY_Controller {
     private $acrud = NULL;
     private $hn = NULL;
     private $vn = NULL;
-    private $visit_date = NULL;
-    private $doctor_id = NULL;
+    private $visitDate = NULL;
+    private $doctorId = NULL;
+    private $isDoctorId = FALSE;
 
     public function __construct() {
         parent::__construct();
         $group = "theptarin";
         $db = $this->getDbData($group);
-        $this->Acrud = new OrrACRUD($group, $db);
-        $this->setACRUD($this->Acrud);
+        $this->acrud = new OrrACRUD($group, $db);
+        $this->setACRUD($this->acrud);
         $this->load->model('ImcModel');
     }
 
     public function icd10Code() {
-        $crud = $this->Acrud;
+        $crud = $this->acrud;
         $crud->setTable('imc_icd10_code')->fieldType('chronic', 'checkbox_boolean')->fieldType('external_cause', 'checkbox_boolean')
                 ->setRelation('icd10_group_code', 'imc_icd10_group', 'name');
         $output = $crud->render();
@@ -37,7 +38,7 @@ class IMC extends MY_Controller {
     }
 
     public function icd10Group() {
-        $crud = $this->Acrud;
+        $crud = $this->acrud;
         $crud->setTable('imc_icd10_group');
         $fields = $this->getAllFields();
         $crud->columns($fields)->fields($fields);
@@ -46,7 +47,7 @@ class IMC extends MY_Controller {
     }
 
     public function icd10Hn() {
-        $crud = $this->Acrud;
+        $crud = $this->acrud;
         $fields = ['hn', 'chronic_diag'];
         $crud->setTable('imc_icd10_hn')->fields($fields)->columns($fields);
         $crud->setRelationNtoN('chronic_diag', 'imc_icd10_hn_chronic', 'imc_icd10_code', 'icd10_hn', 'icd10_code_id', '{code} {name_en}', 'code', ['chronic' => '1']);
@@ -55,7 +56,7 @@ class IMC extends MY_Controller {
     }
 
     public function icd10Opd() {
-        $crud = $this->Acrud;
+        $crud = $this->acrud;
         $crud->setTable('imc_icd10_opd')->unsetAdd()->setRead();
         $crud->setRelationNtoN('opd_principal_diag', 'imc_icd10_opd_principal', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}');
         $crud->setRelationNtoN('opd_external_cause', 'imc_icd10_opd_external', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', ['external_cause' => '1']);
@@ -72,7 +73,7 @@ class IMC extends MY_Controller {
      * หน้าจอข้อมูลงานบริการผู้ป่วยนอก
      */
     public function opdVisit() {
-        $crud = $this->Acrud;
+        $crud = $this->acrud;
         $crud->setTable('imc_opd_visit')->setPrimaryKey('hn', 'imc_opd_visit');
         $fields = $this->getAllFields();
         $crud->columns($fields)->fields($fields)->unsetOperations();
@@ -103,14 +104,14 @@ class IMC extends MY_Controller {
     public function icd10OpdAdd($dd = "", $mm = "", $yyyy = "", $vn = "", $hn = "", $doctor_id = "") {
         $this->load->model('ImcModel');
         $this->hn = $hn;
-        $this->visit_date = $yyyy . "-" . $mm . "-" . $dd;
+        $this->visitDate = $yyyy . "-" . $mm . "-" . $dd;
         $this->vn = $vn;
-        $this->doctor_id = $doctor_id;
+        $this->doctorId = $doctor_id;
         $th_yyyy = $yyyy + 543;
         $patient_data = $this->ImcModel->getPatientData($hn);
         $chronic_diag = $this->ImcModel->getChronicDiag();
         $this->description = "วันที่ $dd/$mm/$th_yyyy VN. $vn HN. $hn " . $patient_data['name'] . " เพศ " . $patient_data['sex'] . " แพทย์ " . $this->_getDoctorName() . " " . $chronic_diag['description'];
-        $crud = $this->Acrud;
+        $crud = $this->acrud;
         $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->columns(['visit_date', 'description', 'signature_opd'])->setRead()
                 ->requiredFields(['description', 'principal_diag'])->addFields(['description', 'principal_diag', 'external_cause'])->setSubject('ข้อมูลวินิจฉัยโรค HN. ' . $patient_data['hn'] . " " . $patient_data['name']);
         $crud->setRelationNtoN('principal_diag', 'imc_icd10_opd_principal', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', $this->_getPrincipalWhereSQL($chronic_diag));
@@ -132,7 +133,7 @@ class IMC extends MY_Controller {
          * $patient_data = $this->ImcModel->getPatientData($hn);
          *  $chronic_diag = $this->ImcModel->getChronicDiag();
          */
-        $crud = $this->Acrud;
+        $crud = $this->acrud;
         $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->unsetOperations();
         $crud->setRelationNtoN('principal_diag', 'imc_icd10_opd_principal', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', $this->_getPrincipalWhereSQL($chronic_diag));
         $crud->setRelationNtoN('external_cause', 'imc_icd10_opd_external', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', ['external_cause' => '1']);
@@ -155,7 +156,7 @@ class IMC extends MY_Controller {
     }
 
     public function icd10Ipd() {
-        $crud = $this->Acrud;
+        $crud = $this->acrud;
         $crud->setTable('imc_icd10_ipd');
         $crud->columns(['discharge_date', 'an', 'hn']);
         $crud->setRelationNtoN('ipd_principal_diag', 'imc_ipd_principal_diag', 'imc_icd10_code', 'icd10_ipd_id', 'icd10_code_id', '{code} {name_en}');
@@ -172,7 +173,7 @@ class IMC extends MY_Controller {
         $query = $this->db->query('SELECT * FROM `doctor`');
         //$rows[] = NULL;
         foreach ($query->result() as $row) {
-            $rows[$row->doctor_id] = $row->doctor_id . " : " . $row->doctor_name . " : " . $row->category;
+            $rows[$row->doctorId] = $row->doctorId . " : " . $row->doctor_name . " : " . $row->category;
         }
         return $rows;
     }
@@ -180,23 +181,28 @@ class IMC extends MY_Controller {
     private function _getDoctorName() {
         $this->load->database('theptarin');
         $sql = "SELECT * FROM `doctor` WHERE `doctor_id` = ?";
-        $query = $this->db->query($sql, [$this->doctor_id]);
+        $query = $this->db->query($sql, [$this->doctorId]);
         $row = $query->row();
         if (isset($row)) {
             $doctor_name = $row->doctor_id . " " . $row->doctor_name;
+            $this->isDoctorId = TRUE;
         } else {
-            $doctor_name = "ไม่มีรหัสแพทย " . $row->doctor_id;
+            $doctor_name = "ไม่มีข้อมูลรหัสแพทย์ " . $this->doctorId;
+            $this->isDoctorId = FALSE;
         }
         return $doctor_name;
     }
 
     public function eventBeforeInsert($val_) {
-        switch ($this->Acrud->getTable()) {
+        switch ($this->acrud->getTable()) {
             case 'imc_icd10_opd':
-                $val_->data['visit_date'] = $this->visit_date;
+                if(!$this->isDoctorId){
+                    $this->setMyJsonMessageFailure('รหัสแพทย์ไม่ถูกต้อง');
+                }
+                $val_->data['visit_date'] = $this->visitDate;
                 $val_->data['vn'] = $this->vn;
                 $val_->data['hn'] = $this->hn;
-                $val_->data['signature_opd'] = $this->doctor_id;
+                $val_->data['signature_opd'] = $this->doctorId;
                 break;
 
             default:
@@ -206,9 +212,9 @@ class IMC extends MY_Controller {
     }
 
     public function eventAfterInsert($val_) {
-        switch ($this->Acrud->getTable()) {
+        switch ($this->acrud->getTable()) {
             case 'imc_icd10_opd':
-                $this->ImcModel->setOpdPrincipalWithChronic($val_->insertId, $this->Acrud->getSignData());
+                $this->ImcModel->setOpdPrincipalWithChronic($val_->insertId, $this->acrud->getSignData());
                 break;
 
             default:
