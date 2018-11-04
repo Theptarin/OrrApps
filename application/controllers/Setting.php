@@ -88,7 +88,7 @@ class Setting extends MY_Controller {
         $output = $crud->render();
         $this->setMyView($output);
     }
-
+    
     public function mySQL() {
         redirect("http://127.0.0.1/phpmyadmin/");
     }
