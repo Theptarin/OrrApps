@@ -28,7 +28,9 @@ class IMC extends MY_Controller {
         $this->setACRUD($this->acrud);
         $this->load->model('ImcModel');
     }
-
+    /**
+     * ทะเบียนรหัสการวินิจฉัยโรค
+     */
     public function icd10Code() {
         $crud = $this->acrud;
         $crud->setTable('imc_icd10_code')->fieldType('chronic', 'checkbox_boolean')->fieldType('external_cause', 'checkbox_boolean')
@@ -36,7 +38,9 @@ class IMC extends MY_Controller {
         $output = $crud->render();
         $this->setMyView($output);
     }
-
+    /**
+     * ทะเบียนกลุ่มการวินิจฉัยโรค
+     */
     public function icd10Group() {
         $crud = $this->acrud;
         $crud->setTable('imc_icd10_group');
@@ -45,7 +49,9 @@ class IMC extends MY_Controller {
         $output = $crud->render();
         $this->setMyView($output);
     }
-
+    /**
+     * ทะเบียนโรคประจำตัว
+     */
     public function icd10Hn() {
         $crud = $this->acrud;
         $fields = ['hn', 'chronic_diag'];
@@ -54,7 +60,9 @@ class IMC extends MY_Controller {
         $output = $crud->render();
         $this->setMyView($output);
     }
-
+    /**
+     * ข้อมูลการวินิจฉัยโรคผู้ป่วยนอก
+     */
     public function icd10Opd() {
         $crud = $this->acrud;
         $crud->setTable('imc_icd10_opd')->unsetAdd()->setRead();
