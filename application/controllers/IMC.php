@@ -181,7 +181,7 @@ class IMC extends MY_Controller {
         $query = $this->db->query('SELECT * FROM `doctor`');
         //$rows[] = NULL;
         foreach ($query->result() as $row) {
-            $rows[$row->doctorId] = $row->doctorId . " : " . $row->doctor_name . " : " . $row->category;
+            $rows[$row->doctor_id] = $row->doctor_id . " : " . $row->doctor_name . " : " . $row->category;
         }
         return $rows;
     }
