@@ -18,6 +18,8 @@ class IMC extends MY_Controller {
     private $vn = NULL;
     private $visitDate = NULL;
     private $doctorId = NULL;
+    private $dischargeDate = NULL;
+    private $an = NULL;
     private $isDoctorId = FALSE;
 
     public function __construct() {
@@ -28,6 +30,7 @@ class IMC extends MY_Controller {
         $this->setACRUD($this->acrud);
         $this->load->model('ImcModel');
     }
+
     /**
      * ทะเบียนรหัสการวินิจฉัยโรค
      */
@@ -38,6 +41,7 @@ class IMC extends MY_Controller {
         $output = $crud->render();
         $this->setMyView($output);
     }
+
     /**
      * ทะเบียนกลุ่มการวินิจฉัยโรค
      */
@@ -49,6 +53,7 @@ class IMC extends MY_Controller {
         $output = $crud->render();
         $this->setMyView($output);
     }
+
     /**
      * ทะเบียนโรคประจำตัว
      */
@@ -60,6 +65,7 @@ class IMC extends MY_Controller {
         $output = $crud->render();
         $this->setMyView($output);
     }
+
     /**
      * ข้อมูลการวินิจฉัยโรคผู้ป่วยนอก
      */
@@ -163,6 +169,65 @@ class IMC extends MY_Controller {
         return $my_val;
     }
 
+    /**
+     * หน้าจอข้อมูลผู้ป่วยในที่เคยพักรักษา
+     */
+    public function ipdDischarge() {
+        $crud = $this->acrud;
+        $crud->setTable('imc_ipd_discharge')->setPrimaryKey('an', 'imc_ipd_discharge');
+        $fields = $this->getAllFields();
+        $crud->columns($fields)->fields($fields)->unsetOperations();
+        $crud->setActionButton('ICD10', 'fa fa-user', function ($row) {
+            return 'icd10IpdAdd/' . $row->discharge_date . '/' . $row->an . '/' . $row->hn . '#/add';
+        }, true);
+        $output = $crud->render();
+        $this->setMyView($output);
+    }
+
+    /**
+     * 
+     * @param type $dd
+     * @param type $mm
+     * @param type $yyyy
+     * @param type $an
+     * @param type $hn
+     */
+    public function icd10IpdAdd($dd = "", $mm = "", $yyyy = "", $an = "", $hn = "") {
+        $this->load->model('ImcModel');
+        $this->dischargeDate = $yyyy . "-" . $mm . "-" . $dd;
+        $this->an = $an;
+        $this->hn = $hn;
+        $th_yyyy = $yyyy + 543;
+        $patient_data = $this->ImcModel->getPatientData($hn);
+        $chronic_diag = $this->ImcModel->getChronicDiag();
+        $this->description = "วันที่ $dd/$mm/$th_yyyy AN. $an HN. $hn " . $patient_data['name'] . " เพศ " . $patient_data['sex'] . " " . $chronic_diag['description'];
+        $crud = $this->acrud;
+        //$crud->setTable('imc_icd10_ipd')->where(['an' => $an])->columns(['discharge_date', 'description', 'an'])->setRead()
+        //        ->requiredFields(['description', 'principal_diag'])->addFields(['description', 'principal_diag', 'external_cause'])->setSubject('ข้อมูลวินิจฉัยโรค HN. ' . $patient_data['hn'] . " " . $patient_data['name']);
+        $crud->setTable('imc_icd10_ipd')->where(['an' => $an])->columns(['discharge_date', 'description', 'an'])->setRead()->addFields(['description', 'ipd_principal_diag', 'clinical_summary', 'signature_ipd'])
+                ->setSubject('ข้อมูลวินิจฉัยโรค HN. ' . $patient_data['hn'] . " " . $patient_data['name']);
+        $crud->setRelationNtoN('ipd_principal_diag', 'imc_ipd_principal_diag', 'imc_icd10_code', 'icd10_ipd_id', 'icd10_code_id', '{code} {name_en}', 'code', $this->_getPrincipalWhereSQL($chronic_diag));
+
+        if ($crud->getState() === 'Initial') {
+            $doctor_ = $this->_getDoctor();
+            $doctor_[''] = "ระบุแพทย์";
+            $crud->fieldType('signature_ipd', 'dropdown_search', $doctor_);
+        }
+        //$crud->setRelationNtoN('ipd_comorbidity_diag', 'imc_ipd_comorbidity_diag', 'imc_icd10_code', 'icd10_ipd_id', 'icd10_code_id', '{code} {name_en}');
+        //$crud->setRelationNtoN('ipd_complication_diag', 'imc_ipd_complication_diag', 'imc_icd10_code', 'icd10_ipd_id', 'icd10_code_id', '{code} {name_en}');
+        //$crud->setRelationNtoN('ipd_consultation','imc_ipd_consultation','ttr_hims.doctor_name','icd10_ipd_id','doctor_name_id','{fname} {lname} [ {doctor_id} ]');
+        //$crud->setRelationNtoN('ipd_other_diag', 'imc_ipd_other_diag', 'imc_icd10_code', 'icd10_ipd_id', 'icd10_code_id', '{code} {name_en}');
+        /**
+         * Default value add form
+         */
+        $crud->callbackAddForm(function ($data) {
+            $data['description'] = $this->description;
+            return $data;
+        });
+        $output = $crud->render();
+        $this->setMyView($output);
+    }
+
     public function icd10Ipd() {
         $crud = $this->acrud;
         $crud->setTable('imc_icd10_ipd');
@@ -204,13 +269,19 @@ class IMC extends MY_Controller {
     public function eventBeforeInsert($val_) {
         switch ($this->acrud->getTable()) {
             case 'imc_icd10_opd':
-                if(!$this->isDoctorId){
+                if (!$this->isDoctorId) {
                     $this->setMyJsonMessageFailure('รหัสแพทย์ไม่ถูกต้อง');
                 }
                 $val_->data['visit_date'] = $this->visitDate;
                 $val_->data['vn'] = $this->vn;
                 $val_->data['hn'] = $this->hn;
                 $val_->data['signature_opd'] = $this->doctorId;
+                break;
+
+            case 'imc_icd10_ipd':
+                $val_->data['discharge_date'] = $this->dischargeDate;
+                $val_->data['an'] = $this->an;
+                $val_->data['hn'] = $this->hn;
                 break;
 
             default:
