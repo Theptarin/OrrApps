@@ -279,6 +279,8 @@ class MY_Controller extends CI_Controller {
                 break;
             case 'Clone';
                 break;
+            case 'Print';
+                break;
             default :
                 $this->setMyJsonMessageFailure("State = $state");
         }
@@ -324,7 +326,11 @@ class MY_Controller extends CI_Controller {
     public function eventRemoveMultipleState() {
         return NULL;
     }
-
+    
+    public function eventPrint() {
+        return NULL;
+    }
+    
     protected function addActivityPostLog($EV_log, $EV_name) {
         $this->DbAcrud->AddActivity($EV_name . ' : ' . $EV_log);
     }
