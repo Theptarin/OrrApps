@@ -67,7 +67,7 @@ class IMC extends MY_Controller {
     }
 
     /**
-     * ข้อมูลการวินิจฉัยโรคผู้ป่วยนอก
+     * ข้อมูลการวินิจฉัยโรคผู้ป่วยนอก(อยู่ระหว่างปรับแก้ไข)
      */
     public function icd10Opd() {
         $crud = $this->acrud;
@@ -95,7 +95,8 @@ class IMC extends MY_Controller {
             if ($row->icd10_opd_id == "") {
                 return 'icd10OpdAdd/' . $row->visit_date . '/' . $row->vn . '/' . $row->hn . '/' . $row->doctor_id . '#/add';
             } else {
-                return 'icd10OpdEdit/' . $row->hn . '#/';
+                return 'icd10OpdAdd/' . $row->visit_date . '/' . $row->vn . '/' . $row->hn . '/' . $row->doctor_id . '#/edit/' . $row->icd10_opd_id;
+                //return 'icd10Opd#/edit/' . $row->icd10_opd_id;
             }
         }, true);
         if ($crud->getState() === 'Initial') {
@@ -126,7 +127,7 @@ class IMC extends MY_Controller {
         $chronic_diag = $this->ImcModel->getChronicDiag();
         $this->description = "วันที่ $dd/$mm/$th_yyyy VN. $vn HN. $hn " . $patient_data['name'] . " เพศ " . $patient_data['sex'] . " แพทย์ " . $this->_getDoctorName() . " " . $chronic_diag['description'];
         $crud = $this->acrud;
-        $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->columns(['visit_date', 'description', 'signature_opd'])->setRead()
+        $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->columns(['visit_date', 'description', 'signature_opd'])->setRead()->editFields(['description', 'principal_diag', 'external_cause'])
                 ->requiredFields(['description', 'principal_diag'])->addFields(['description', 'principal_diag', 'external_cause'])->setSubject('ข้อมูลวินิจฉัยโรค HN. ' . $patient_data['hn'] . " " . $patient_data['name']);
         $crud->setRelationNtoN('principal_diag', 'imc_icd10_opd_principal', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', $this->_getPrincipalWhereSQL($chronic_diag));
         $crud->setRelationNtoN('external_cause', 'imc_icd10_opd_external', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', ['external_cause' => '1']);
@@ -137,24 +138,10 @@ class IMC extends MY_Controller {
             $data['description'] = $this->description;
             return $data;
         });
-        $output = $crud->render();
-        $this->setMyView($output);
+        //$output = $crud->render();
+        $this->setMyView($crud->render());
     }
-
-    public function icd10OpdEdit($hn) {
-        /**
-         * ตรวจสอบข้อมูลโรคเรื้อรังเมื่อมีการแก้ไข
-         * $patient_data = $this->ImcModel->getPatientData($hn);
-         *  $chronic_diag = $this->ImcModel->getChronicDiag();
-         */
-        $crud = $this->acrud;
-        $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->unsetOperations();
-        $crud->setRelationNtoN('principal_diag', 'imc_icd10_opd_principal', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', $this->_getPrincipalWhereSQL($chronic_diag));
-        $crud->setRelationNtoN('external_cause', 'imc_icd10_opd_external', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', ['external_cause' => '1']);
-        $output = $crud->render();
-        $this->setMyView($output);
-    }
-
+    
     private function _getPrincipalWhereSQL($chronic_diag) {
         if ($chronic_diag['is_e10'] && $chronic_diag['is_e11']) {
             $message = "HN. " . $chronic_diag['hn'] . " พบว่ามีรหัส E10 E11 ในข้อมูลโรคประจำตัว [ " . $chronic_diag['description'] . " ]";
@@ -207,8 +194,9 @@ class IMC extends MY_Controller {
         $crud->setTable('imc_icd10_ipd')->where(['an' => $an])->columns(['discharge_date', 'description', 'an'])->setRead()
                 ->addFields(['description', 'ipd_principal_diag', 'ipd_comorbidity_diag', 'clinical_summary', 'signature_ipd'])
                 ->setSubject('ข้อมูลวินิจฉัยโรค HN. ' . $patient_data['hn'] . " " . $patient_data['name']);
-        $crud->setRelationNtoN('ipd_principal_diag', 'imc_ipd_principal_diag', 'imc_icd10_code', 'icd10_ipd_id', 'icd10_code_id', '{code} {name_en}', 'code', $this->_getPrincipalWhereSQL($chronic_diag));
-        $crud->setRelationNtoN('ipd_comorbidity_diag', 'imc_ipd_comorbidity_diag', 'imc_icd10_code', 'icd10_ipd_id', 'icd10_code_id', '{code} {name_en}', 'code', $this->_getPrincipalWhereSQL($chronic_diag));
+        $ipd_principal_code = $this->_getPrincipalWhereSQL($chronic_diag);
+        $crud->setRelationNtoN('ipd_principal_diag', 'imc_ipd_principal_diag', 'imc_icd10_code', 'icd10_ipd_id', 'icd10_code_id', '{code} {name_en}', 'code', $ipd_principal_code);
+        $crud->setRelationNtoN('ipd_comorbidity_diag', 'imc_ipd_comorbidity_diag', 'imc_icd10_code', 'icd10_ipd_id', 'icd10_code_id', '{code} {name_en}', 'code', $ipd_principal_code);
 
         if ($crud->getState() === 'Initial') {
             $doctor_ = $this->_getDoctor();
