@@ -122,6 +122,9 @@ class IMC extends MY_Controller {
         $crud = $this->acrud;
         $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->columns(['visit_date', 'description', 'signature_opd'])->setRead()->editFields(['description', 'principal_diag', 'external_cause'])
                 ->requiredFields(['description', 'principal_diag'])->addFields(['description', 'principal_diag', 'external_cause'])->setSubject('ข้อมูลวินิจฉัยโรค HN. ' . $patient_data['hn'] . " " . $patient_data['name']);
+        /**
+         * @todo ยังมีความผิดพลาดเมื่อบันทึกข้อมูลในฟิลด์ไปแล้วต้องเหลือไว้หนึ่งรายการลบหมดไม่ได้
+         */
         $crud->setRelationNtoN('principal_diag', 'imc_icd10_opd_principal', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', $this->_getPrincipalWhereSQL($chronic_diag));
         $crud->setRelationNtoN('external_cause', 'imc_icd10_opd_external', 'imc_icd10_code', 'icd10_opd_id', 'icd10_code_id', '{code} {name_en}', 'code', ['external_cause' => '1']);
         /**
@@ -182,16 +185,23 @@ class IMC extends MY_Controller {
         $th_yyyy = $yyyy + 543;
         $patient_data = $this->ImcModel->getPatientData($hn);
         $chronic_diag = $this->ImcModel->getChronicDiag();
-        $field_ = ['description', 'principal_diag', 'comorbidity_diag', 'complication_diag', 'external_diag', 'clinical_summary', 'signature_ipd'];
+        $field_ = ['description', 'principal_diag', 'comorbidity_diag', 'complication_diag', 'other_diag', 'external_diag', 'clinical_summary', 'discharge_status', 'discharge_type', 'cause_of_death', 'signature_ipd'];
         $this->description = "วันที่ $dd/$mm/$th_yyyy AN. $an HN. $hn " . $patient_data['name'] . " เพศ " . $patient_data['sex'] . " " . $chronic_diag['description'];
         $crud = $this->acrud;
         $crud->setTable('imc_icd10_ipd')->where(['an' => $an])->columns(['discharge_date', 'description', 'an'])->setRead()->requiredFields(['description', 'principal_diag'])
                 ->addFields($field_)->editFields($field_)->setSubject('ข้อมูลวินิจฉัยโรค HN. ' . $patient_data['hn'] . " " . $patient_data['name']);
         $ipd_icd10_code = $this->_getPrincipalWhereSQL($chronic_diag);
+        /**
+         * @todo ยังมีความผิดพลาดเมื่อบันทึกข้อมูลในฟิลด์ไปแล้วต้องเหลือไว้หนึ่งรายการลบหมดไม่ได้
+         */
         $crud->setRelationNtoN('principal_diag', 'imc_icd10_ipd_principal', 'imc_icd10_code', 'icd10_ipd_id', 'icd10_code_id', '{code} {name_en}', 'code', $ipd_icd10_code);
         $crud->setRelationNtoN('comorbidity_diag', 'imc_icd10_ipd_comorbidity', 'imc_icd10_code', 'icd10_ipd_id', 'icd10_code_id', '{code} {name_en}', 'code', $ipd_icd10_code);
         $crud->setRelationNtoN('complication_diag', 'imc_icd10_ipd_complication', 'imc_icd10_code', 'icd10_ipd_id', 'icd10_code_id', '{code} {name_en}', 'code', $ipd_icd10_code);
+        $crud->setRelationNtoN('other_diag', 'imc_icd10_ipd_other', 'imc_icd10_code', 'icd10_ipd_id', 'icd10_code_id', '{code} {name_en}', 'code', $ipd_icd10_code);
         $crud->setRelationNtoN('external_diag', 'imc_icd10_ipd_external', 'imc_icd10_code', 'icd10_ipd_id', 'icd10_code_id', '{code} {name_en}', 'code', ['external_cause' => '1']);
+        $crud->fieldType('discharge_status', 'dropdown_search', $this->ImcModel->getDischargeStatus());
+        $crud->fieldType('discharge_type', 'dropdown_search', $this->ImcModel->getDischargeType());
+        $crud->setRelationNtoN('cause_of_death', 'imc_icd10_ipd_cause_of_death', 'imc_icd10_code', 'icd10_ipd_id', 'icd10_code_id', '{code} {name_en}', 'code', $ipd_icd10_code);
 
         if ($crud->getState() === 'Initial') {
             $doctor_ = $this->_getDoctor();

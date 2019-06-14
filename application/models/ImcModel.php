@@ -66,6 +66,23 @@ class ImcModel extends CI_Model {
     }
 
     /**
+     * สถานะการจำหน่ายผู้ป่วยใน
+     * @return array
+     */
+    public function getDischargeStatus() {
+        return ['1' => "Complete Recovery", '2' => "Improved", '3' => "Not Improved", '4' => "Normal Delivery", '5' => "Un-Delivery",
+            '6' => "Normal Child Discharged With Mother", '7' => "Normal Child Discharged Separately", '8' => "Stillbirths", '9' => "Dead"];
+    }
+
+    /**
+     * ประเภทการจำหน่ายผู้ป่วยใน
+     * @return array
+     */
+    public function getDischargeType() {
+        return['1' => "With Approval", '2' => "Against Advice", '3' => "By Escape", '4' => "By Transfer", '5' => "Dead, Autopsy", '6' => "Dead, No Autposy"];
+    }
+
+    /**
      * ข้อมูลโรคประจำตัว/เรื้อรัง
      * @return array [hn,description,chronic_count,is_e10,is_e11]
      */
