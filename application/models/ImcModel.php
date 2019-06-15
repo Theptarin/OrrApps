@@ -51,9 +51,9 @@ class ImcModel extends CI_Model {
 
             $my_val['sex'] = ($row->sex == 'M' ) ? 'ชาย' : 'หญิง';
             $my_val['name'] = $row->prefix . $row->fname . " " . $row->lname;
+            $my_val['birthday'] = date_create_from_format('Y-m-d', $row->birthday_date);
             /**
-             * การคำนวนอายุของผู้ป่วย
-             * 
+             * ตัวอย่างการคำนวนอายุของผู้ป่วย
              * $birthday_date = date_create_from_format('Y-m-d', $row->birthday_date);
              * $diff = date_diff($birthday_date, date_create_from_format('Y-m-d', $this->visit_date));
              * $th_yyyy = date_format($birthday_date, 'Y') + 543;

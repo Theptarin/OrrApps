@@ -17,6 +17,7 @@ class IMC extends MY_Controller {
     private $hn = NULL;
     private $vn = NULL;
     private $visitDate = NULL;
+    private $visitAge = NULL;
     private $doctorId = NULL;
     private $dischargeDate = NULL;
     private $an = NULL;
@@ -91,7 +92,7 @@ class IMC extends MY_Controller {
                 return 'icd10OpdAdd/' . $row->visit_date . '/' . $row->vn . '/' . $row->hn . '/' . $row->doctor_id . '#/add';
             } else {
                 return 'icd10OpdAdd/' . $row->visit_date . '/' . $row->vn . '/' . $row->hn . '/' . $row->doctor_id . '#/edit/' . $row->icd10_opd_id;
-                //return 'icd10Opd#/edit/' . $row->icd10_opd_id;
+//return 'icd10Opd#/edit/' . $row->icd10_opd_id;
             }
         }, true);
         if ($crud->getState() === 'Initial') {
@@ -118,7 +119,13 @@ class IMC extends MY_Controller {
         $th_yyyy = $yyyy + 543;
         $patient_data = $this->ImcModel->getPatientData($hn);
         $chronic_diag = $this->ImcModel->getChronicDiag();
-        $this->description = "วันที่ $dd/$mm/$th_yyyy VN. $vn HN. $hn " . $patient_data['name'] . " เพศ " . $patient_data['sex'] . " แพทย์ " . $this->_getDoctorName() . " " . $chronic_diag['description'];
+        $this->visitAge = NULL;
+        if ($patient_data['birthday'] instanceof DateTime) {
+            $this->visitAge = date_diff($patient_data['birthday'], date_create_from_format('Y-m-d', $this->visitDate));
+            $visit_age = $this->visitAge->format('%y ปี %m เดือน %d วัน');
+        }
+        $this->description = "วันที่ $dd/$mm/$th_yyyy VN. $vn HN. $hn " . $patient_data['name'] . " เพศ " . $patient_data['sex'] . " วันที่มาอายุ " . $visit_age .
+                " \nแพทย์ " . $this->_getDoctorName() . " " . $chronic_diag['description'];
         $crud = $this->acrud;
         $crud->setTable('imc_icd10_opd')->where(['hn' => $hn])->columns(['visit_date', 'description', 'signature_opd'])->setRead()->editFields(['description', 'principal_diag', 'external_cause'])
                 ->requiredFields(['description', 'principal_diag'])->addFields(['description', 'principal_diag', 'external_cause'])->setSubject('ข้อมูลวินิจฉัยโรค HN. ' . $patient_data['hn'] . " " . $patient_data['name']);
@@ -139,7 +146,7 @@ class IMC extends MY_Controller {
 
     private function _getPrincipalWhereSQL($chronic_diag) {
         if ($chronic_diag['is_e10'] && $chronic_diag['is_e11']) {
-            $message = "HN. " . $chronic_diag['hn'] . " พบว่ามีรหัส E10 E11 ในข้อมูลโรคประจำตัว [ " . $chronic_diag['description'] . " ]";
+            $message = "HN. " . $chronic_diag['hn'] . " พบว่ามีรหัส E10 E11 ในข้อมูลโรคประจำตัว [" . $chronic_diag['description'] . "]";
             die($message);
         } else if ($chronic_diag['is_e10']) {
             $my_val = ['external_cause' => '0', 'code NOT LIKE ?' => 'E11%'];
@@ -221,7 +228,7 @@ class IMC extends MY_Controller {
     private function _getDoctor() {
         $this->load->database('theptarin');
         $query = $this->db->query('SELECT * FROM `doctor`');
-        //$rows[] = NULL;
+//$rows[] = NULL;
         foreach ($query->result() as $row) {
             $rows[$row->doctor_id] = $row->doctor_id . " : " . $row->doctor_name . " : " . $row->category;
         }
