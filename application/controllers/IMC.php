@@ -188,7 +188,7 @@ class IMC extends MY_Controller {
         $field_ = ['description', 'principal_diag', 'comorbidity_diag', 'complication_diag', 'other_diag', 'external_diag', 'clinical_summary', 'discharge_status', 'discharge_type', 'cause_of_death', 'signature_ipd'];
         $this->description = "วันที่ $dd/$mm/$th_yyyy AN. $an HN. $hn " . $patient_data['name'] . " เพศ " . $patient_data['sex'] . " " . $chronic_diag['description'];
         $crud = $this->acrud;
-        $crud->setTable('imc_icd10_ipd')->where(['an' => $an])->columns(['discharge_date', 'description', 'an'])->setRead()->requiredFields(['description', 'principal_diag'])
+        $crud->setTable('imc_icd10_ipd')->where(['an' => $an])->columns(['discharge_date', 'description', 'an'])->setRead()->requiredFields(['description', 'principal_diag', 'signature_ipd'])
                 ->addFields($field_)->editFields($field_)->setSubject('ข้อมูลวินิจฉัยโรค HN. ' . $patient_data['hn'] . " " . $patient_data['name']);
         $ipd_icd10_code = $this->_getPrincipalWhereSQL($chronic_diag);
         /**
