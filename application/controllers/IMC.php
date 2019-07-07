@@ -39,7 +39,7 @@ class IMC extends MY_Controller {
         $crud = $this->acrud;
         $crud->setTable('imc_icd10_code')->fieldType('chronic', 'checkbox_boolean')->fieldType('external_cause', 'checkbox_boolean')
                 ->setRelation('icd10_group_code', 'imc_icd10_group', 'name');
-        $this->setMyView($$crud->render());
+        $this->setMyView($crud->render());
     }
 
     /**
